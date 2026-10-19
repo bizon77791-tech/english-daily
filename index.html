@@ -1,0 +1,267 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f5f7fb">
+<title>English Daily</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f5f7fb;color:#172033;
+font:16px Arial,sans-serif}
+.app{max-width:480px;margin:auto;padding:22px 16px 90px}
+h1{font-size:27px;margin:8px 0}
+h2{font-size:20px}
+.muted{color:#778198;font-size:14px}
+.card{background:white;border-radius:20px;padding:20px;
+margin:16px 0;box-shadow:0 5px 20px #15213b08}
+.hero{background:#2459e8;color:white}
+.hero .muted{color:#dce5ff}
+button{border:0;border-radius:13px;padding:14px;
+font-size:15px;font-weight:600;cursor:pointer}
+.primary{background:#2459e8;color:white;width:100%}
+.option{background:#f0f3fa;color:#172033;width:100%;
+text-align:left;margin:6px 0}
+.option:disabled{opacity:1}
+.nav{position:fixed;bottom:0;left:0;right:0;
+display:flex;justify-content:center;background:white;
+border-top:1px solid #e8ebf2;padding:10px 0}
+.nav button{background:white;color:#667085;font-size:12px;
+padding:9px 12px;flex:1;max-width:120px}
+.nav button.active{color:#2459e8}
+.word{font-size:29px;font-weight:bold;margin:18px 0 8px}
+.progress{height:8px;background:#e8edfa;border-radius:8px;
+overflow:hidden;margin:12px 0}
+.progress div{height:100%;background:#2459e8;width:0}
+.hidden{display:none}
+.feedback{font-weight:bold;margin:12px 0}
+.small{font-size:13px}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="muted">ENGLISH DAILY · АНГЛИЙСКИЙ КАЖДЫЙ ДЕНЬ</div>
+  <h1 id="greeting">Привет! 👋</h1>
+  <div class="muted">Твой английский начинается сегодня</div>
+</header>
+
+<section id="home">
+  <div class="card hero">
+    <div class="muted">ТВОЯ ЦЕЛЬ НА СЕГОДНЯ</div>
+    <h2>10 новых слов</h2>
+    <div id="todayText">Начни с короткого урока</div>
+    <div class="progress"><div id="homeProgress"></div></div>
+    <button class="primary" style="background:white;color:#2459e8"
+      onclick="startQuiz()">Начать урок →</button>
+  </div>
+  <div class="card">
+    <h2>Продолжить обучение</h2>
+    <p>📚 Базовые слова и выражения</p>
+    <p class="muted">Уровень A1 · Начальный</p>
+    <button class="primary" onclick="showTab('words')">
+      Учить слова
+    </button>
+  </div>
+  <div class="card">
+    <h2>Твой результат</h2>
+    <div id="summary">Изучено слов: 0</div>
+    <p class="muted" id="quizSummary">Тесты пройдены: 0</p>
+  </div>
+</section>
+
+<section id="words" class="hidden">
+  <h2>Карточки слов</h2>
+  <div class="card" style="text-align:center">
+    <div class="muted" id="wordCount"></div>
+    <div class="word" id="wordEnglish"></div>
+    <div id="wordTranslation">Нажми, чтобы открыть перевод</div>
+    <p class="muted" id="wordExample"></p>
+    <button class="primary" onclick="flipWord()">Показать перевод</button>
+    <button class="option" onclick="nextWord()">Знаю это слово ✓</button>
+    <button class="option" onclick="nextWord()">Повторить позже ↻</button>
+  </div>
+</section>
+
+<section id="lesson" class="hidden">
+  <h2>Мини-тест</h2>
+  <div class="card">
+    <div class="muted" id="questionNumber"></div>
+    <h2 id="question"></h2>
+    <div id="options"></div>
+    <div class="feedback" id="feedback"></div>
+    <button class="primary" id="nextButton" onclick="nextQuestion()"
+      disabled>Следующий вопрос →</button>
+  </div>
+</section>
+
+<section id="profile" class="hidden">
+  <h2>Мой прогресс</h2>
+  <div class="card">
+    <h2>Твой профиль 🎯</h2>
+    <p id="profileWords">Изучено слов: 0</p>
+    <p id="profileTests">Пройдено тестов: 0</p>
+    <p id="profileCorrect">Правильных ответов: 0</p>
+    <div class="progress"><div id="profileProgress"></div></div>
+    <p class="muted">Продолжай заниматься каждый день!</p>
+    <button class="option" onclick="resetProgress()">Сбросить прогресс</button>
+  </div>
+</section>
+</div>
+
+<nav class="nav">
+  <button class="active" onclick="showTab('home',this)">🏠<br>Главная</button>
+  <button onclick="showTab('words',this)">📚<br>Слова</button>
+  <button onclick="startQuiz()">✏️<br>Урок</button>
+  <button onclick="showTab('profile',this)">👤<br>Профиль</button>
+</nav>
+
+<script>
+const tg = window.Telegram?.WebApp;
+tg?.ready();
+tg?.expand();
+
+const words = [
+ {en:"Hello",ru:"Привет",ex:"Hello, Anna!"},
+ {en:"Thank you",ru:"Спасибо",ex:"Thank you very much."},
+ {en:"Please",ru:"Пожалуйста",ex:"Water, please."},
+ {en:"Friend",ru:"Друг",ex:"He is my friend."},
+ {en:"House",ru:"Дом",ex:"This is my house."},
+ {en:"Water",ru:"Вода",ex:"I drink water."},
+ {en:"Work",ru:"Работа; работать",ex:"I work every day."},
+ {en:"Learn",ru:"Учить; изучать",ex:"I learn English."},
+ {en:"Good",ru:"Хороший",ex:"Have a good day!"},
+ {en:"Today",ru:"Сегодня",ex:"Today is a good day."}
+];
+
+const questions = [
+ {q:'Как переводится "Hello"?',a:["Пока","Привет","Спасибо","Пожалуйста"],c:1},
+ {q:'Как будет «вода»?',a:["House","Work","Water","Friend"],c:2},
+ {q:'Что означает "Thank you"?',a:["Спасибо","Извините","Доброе утро","До встречи"],c:0},
+ {q:'Как переводится "Friend"?',a:["Работа","Дом","Друг","День"],c:2},
+ {q:'Как сказать «сегодня»?',a:["Tomorrow","Today","Yesterday","Please"],c:1}
+];
+
+let data;
+try {
+ data=JSON.parse(localStorage.getItem("englishDaily")||"{}");
+} catch(e) { data={}; }
+data={learned:[],tests:0,correct:0,...data};
+let wi=0,shown=false,qi=0,score=0,answered=false;
+
+const save=()=>localStorage.setItem("englishDaily",JSON.stringify(data));
+
+function showTab(id,btn){
+ ["home","words","lesson","profile"].forEach(x=>
+ document.getElementById(x).classList.toggle("hidden",x!==id));
+ document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));
+ if(btn)btn.classList.add("active");
+ else {
+ const buttons=[...document.querySelectorAll(".nav button")];
+ const index={home:0,words:1,lesson:2,profile:3}[id];
+ buttons[index]?.classList.add("active");
+ }
+ render();
+}
+function render(){
+ const name=tg?.initDataUnsafe?.user?.first_name;
+ document.getElementById("greeting").textContent=
+ name?`Привет, ${name}! 👋`:"Привет! 👋";
+ const n=data.learned.length;
+ document.getElementById("summary").textContent=`Изучено слов: ${n} из ${words.length}`;
+ document.getElementById("quizSummary").textContent=`Тесты пройдены: ${data.tests}`;
+ document.getElementById("todayText").textContent=`Изучено ${n} из 10 слов`;
+ document.getElementById("homeProgress").style.width=(n*10)+"%";
+ document.getElementById("profileWords").textContent=`Изучено слов: ${n}`;
+ document.getElementById("profileTests").textContent=`Пройдено тестов: ${data.tests}`;
+ document.getElementById("profileCorrect").textContent=`Правильных ответов: ${data.correct}`;
+ document.getElementById("profileProgress").style.width=(n*10)+"%";
+ renderWord();
+}
+function renderWord(){
+ const w=words[wi%words.length];
+ document.getElementById("wordCount").textContent=`Слово ${wi%words.length+1} из ${words.length}`;
+ document.getElementById("wordEnglish").textContent=w.en;
+ document.getElementById("wordTranslation").textContent=shown?w.ru:"Нажми, чтобы открыть перевод";
+ document.getElementById("wordExample").textContent=shown?w.ex:"";
+ document.querySelector("#words .primary").textContent=shown?"Скрыть перевод":"Показать перевод";
+}
+function flipWord(){shown=!shown;renderWord()}
+function nextWord(){
+ const w=words[wi%words.length];
+ if(!data.learned.includes(w.en))data.learned.push(w.en);
+ wi=(wi+1)%words.length;shown=false;save();render();
+}
+function startQuiz(){
+ qi=0;score=0;answered=false;showTab("lesson");renderQuestion();
+}
+function renderQuestion(){
+ const q=questions[qi];
+ document.getElementById("questionNumber").textContent=`Вопрос ${qi+1} из ${questions.length}`;
+ document.getElementById("question").textContent=q.q;
+ document.getElementById("feedback").textContent="";
+ document.getElementById("nextButton").disabled=true;
+ document.getElementById("nextButton").textContent=
+ qi===questions.length-1?"Завершить тест":"Следующий вопрос →";
+ document.getElementById("options").innerHTML="";
+ q.a.forEach((answer,i)=>{
+ const b=document.createElement("button");
+ b.className="option";b.textContent=answer;
+ b.onclick=()=>chooseAnswer(i,b);
+ document.getElementById("options").appendChild(b);
+ });
+}
+function chooseAnswer(i,button){
+ if(answered)return;
+ answered=true;
+ const q=questions[qi];
+ document.querySelectorAll("#options button").forEach((b,j)=>{
+ b.disabled=true;
+ if(j===q.c)b.style.background="#d8f8e4";
+ });
+ if(i===q.c){score++;data.correct++;
+ document.getElementById("feedback").textContent="Верно! ✓";
+ document.getElementById("feedback").style.color="#16834a";
+ }else{
+ document.getElementById("feedback").textContent="Не совсем. Правильный ответ отмечен.";
+ document.getElementById("feedback").style.color="#b45309";
+ button.style.background="#ffe2e2";
+ }
+ document.getElementById("nextButton").disabled=false;
+ save();
+}
+function nextQuestion(){
+ if(!answered)return;
+ if(qi<questions.length-1){qi++;answered=false;renderQuestion();}
+ else{
+ data.tests++;save();
+ document.getElementById("questionNumber").textContent="Результат";
+ document.getElementById("question").textContent=`Правильных ответов: ${score} из ${questions.length}`;
+ document.getElementById("options").innerHTML="";
+ document.getElementById("feedback").textContent=
+ score===questions.length?"Отлично! Все ответы верны!":"Повтори слова и попробуй ещё раз.";
+ document.getElementById("nextButton").disabled=false;
+ document.getElementById("nextButton").textContent="На главную";
+ document.getElementById("nextButton").onclick=()=> {
+ document.getElementById("nextButton").onclick=nextQuestion;
+ showTab("home");
+ };
+ document.getElementById("nextButton").onclick=()=>{
+ document.getElementById("nextButton").onclick=nextQuestion;
+ document.getElementById("nextButton").textContent="Следующий вопрос →";
+ showTab("home");
+ };
+ render();
+ }
+}
+function resetProgress(){
+ if(confirm("Сбросить весь прогресс?")){
+ data={learned:[],tests:0,correct:0};save();render();
+ }
+}
+render();
+</script>
+</body>
+  </html>
