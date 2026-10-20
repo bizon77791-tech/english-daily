@@ -16,7 +16,6 @@ header p{margin:0;color:#b9c5d8}
 main{padding:16px;max-width:600px;margin:auto;padding-bottom:100px}
 .card{background:#1b2940;border:1px solid #30415c;border-radius:18px;padding:18px;margin-bottom:15px}
 h2{font-size:20px;margin:0 0 14px}
-h3{font-size:17px;margin:12px 0}
 button{border:0;border-radius:12px;padding:13px 15px;font-size:15px;font-weight:bold;cursor:pointer}
 button:disabled{opacity:.6}
 .primary{background:#65e6ad;color:#10251d;width:100%}
@@ -36,7 +35,6 @@ nav button.active{color:#65e6ad}
 .wordrow:last-child{border:0}
 .mini{background:#30415c;color:white;padding:9px 12px}
 .status{font-size:13px;text-align:center;color:#aabbd4;min-height:20px;margin-top:10px;line-height:1.4}
-.badge{display:inline-block;background:#30415c;padding:5px 9px;border-radius:20px;color:#c5d0e0;font-size:12px}
 .hidden{display:none!important}
 </style>
 </head>
@@ -82,7 +80,7 @@ nav button.active{color:#65e6ad}
 <section id="tab-list" class="hidden">
 <div class="card">
 <h2>🗂 Все слова</h2>
-<p class="small">Нажми на кнопку, чтобы увидеть слово и услышать произношение.</p>
+<p class="small">Нажми на кнопку, чтобы услышать произношение.</p>
 <div id="allWords"></div>
 </div>
 </section>
@@ -107,7 +105,7 @@ nav button.active{color:#65e6ad}
 <div class="stat" id="profileLearned">0</div>
 <p>Правильных ответов в тестах</p>
 <div class="stat" id="profileScore">0</div>
-<p class="small">Прогресс сохраняется на этом устройстве в браузере. При очистке данных браузера он может потеряться.</p>
+<p class="small">Прогресс сохраняется в браузере на этом устройстве.</p>
 <button class="secondary" onclick="resetProgress()">Сбросить прогресс</button>
 </div>
 <div class="card">
@@ -152,32 +150,33 @@ const words = [
 {en:"important",ru:"важный",ex:"English is important for my work."}
 ];
 
-let data = {learned:[],score:0};
-try {
- const saved = localStorage.getItem("englishDailyProgressV2");
- if(saved) {
-  const parsed = JSON.parse(saved);
-  if(Array.isArray(parsed.learned) && Number.isFinite(parsed.score)) data=parsed;
+let data={learned:[],score:0};
+try{
+ const saved=localStorage.getItem("englishDailyProgressV2");
+ if(saved){
+  const parsed=JSON.parse(saved);
+  if(Array.isArray(parsed.learned)&&Number.isFinite(parsed.score))data=parsed;
  }
-} catch(e) {}
-let wi=0, qi=0, correct=0, answered=false, currentAudio=null;
+}catch(e){}
+
+let wi=0,qi=0,correct=0,answered=false,currentAudio=null;
+let audioRun=0;
 
 function saveData(){
- try {localStorage.setItem("englishDailyProgressV2",JSON.stringify(data));}
- catch(e) {}
+ try{localStorage.setItem("englishDailyProgressV2",JSON.stringify(data));}catch(e){}
  updateStats();
 }
 
 function showTab(tab){
  document.querySelectorAll("main section").forEach(s=>s.classList.add("hidden"));
  const section=document.getElementById("tab-"+tab);
- if(section) section.classList.remove("hidden");
+ if(section)section.classList.remove("hidden");
  document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
- const nav=document.getElementById("nav-"+tab);
- if(nav) nav.classList.add("active");
- if(tab==="list") renderAllWords();
- if(tab==="words") renderWord();
- if(tab==="quiz" && !document.getElementById("quizWord").textContent) renderQuiz();
+ const navButton=document.getElementById("nav-"+tab);
+ if(navButton)navButton.classList.add("active");
+ if(tab==="list")renderAllWords();
+ if(tab==="words")renderWord();
+ if(tab==="quiz"&&!document.getElementById("quizWord").textContent)renderQuiz();
  window.scrollTo(0,0);
 }
 
@@ -192,22 +191,22 @@ function renderWord(){
 }
 
 function nextWord(){
+ stopAudio();
  wi=(wi+1)%words.length;
  renderWord();
 }
 
 function markLearned(){
  const en=words[wi].en;
- if(!data.learned.includes(en)) data.learned.push(en);
+ if(!data.learned.includes(en))data.learned.push(en);
  saveData();
- const status=document.getElementById("audioStatus");
- status.textContent="✅ Слово отмечено как изученное.";
+ document.getElementById("audioStatus").textContent="✅ Слово отмечено как изученное.";
 }
 
 function renderAllWords(){
  const box=document.getElementById("allWords");
  box.innerHTML="";
- words.forEach((w,i)=>{
+ words.forEach(w=>{
   const row=document.createElement("div");
   row.className="wordrow";
   const info=document.createElement("div");
@@ -231,102 +230,133 @@ function renderAllWords(){
  box.append(status);
 }
 
+function stopAudio(){
+ audioRun++;
+ if(currentAudio){
+  try{
+   currentAudio.pause();
+   currentAudio.removeAttribute("src");
+   currentAudio.load();
+  }catch(e){}
+  currentAudio=null;
+ }
+ try{
+  if("speechSynthesis" in window)window.speechSynthesis.cancel();
+ }catch(e){}
+}
+
 async function playPronunciation(text,statusId="audioStatus"){
  const status=document.getElementById(statusId);
  if(!status)return;
- if(currentAudio){
-  currentAudio.pause();
-  currentAudio=null;
- }
- status.textContent="Ищу аудиозапись…";
 
- // Сначала пробуем найти готовое произношение в словаре.
+ stopAudio();
+ const myRun=audioRun;
+ status.textContent="Подключаю озвучивание…";
+
+ // Сначала пробуем аудиосервисы с коротким тайм-аутом.
+ const sources=[
+  "https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=en-US&q=",
+  "https://translate.google.co.uk/translate_tts?ie=UTF-8&client=tw-ob&tl=en&q=",
+  "https://translate.google.de/translate_tts?ie=UTF-8&client=tw-ob&tl=en&q="
+ ];
+
+ for(const source of sources){
+  if(myRun!==audioRun)return;
+  const ok=await tryAudio(source+encodeURIComponent(text),status,3500,myRun);
+  if(ok)return;
+ }
+
+ if(myRun!==audioRun)return;
+ status.textContent="Пробую словарь…";
+
+ // Если аудиосервисы не сработали, пробуем словарь.
  try{
-  const response=await fetch(
-   "https://api.dictionaryapi.dev/api/v2/entries/en/"+encodeURIComponent(text),
-   {cache:"no-store"}
-  );
+  const controller=new AbortController();
+  const timeout=setTimeout(()=>controller.abort(),3500);
+  let response;
+  try{
+   response=await fetch(
+    "https://api.dictionaryapi.dev/api/v2/entries/en/"+encodeURIComponent(text),
+    {signal:controller.signal,cache:"no-store"}
+   );
+  }finally{
+   clearTimeout(timeout);
+  }
+
   if(response.ok){
    const entries=await response.json();
-   let audioUrl="";
    for(const entry of entries){
-    for(const phonetic of (entry.phonetics||[])){
-     if(phonetic.audio){
-      audioUrl=phonetic.audio.startsWith("//")
-       ?"https:"+phonetic.audio
-       :phonetic.audio;
-      if(audioUrl)break;
-     }
+    for(const phonetic of entry.phonetics||[]){
+     if(!phonetic.audio)continue;
+     let url=phonetic.audio;
+     if(url.startsWith("//"))url="https:"+url;
+     if(myRun!==audioRun)return;
+     if(await tryAudio(url,status,4000,myRun))return;
     }
-    if(audioUrl)break;
-   }
-   if(audioUrl){
-    const played=await tryAudio(audioUrl,status);
-    if(played)return;
    }
   }
  }catch(e){}
 
- // Запасной вариант: синтез аудио через Google Translate.
- const fallback=
-  "https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=en&q="+
-  encodeURIComponent(text);
- const played=await tryAudio(fallback,status);
- if(played)return;
+ if(myRun!==audioRun)return;
 
- // Последний вариант — встроенное озвучивание браузера.
+ // Последний вариант — синтезатор устройства.
  try{
-  if("speechSynthesis" in window){
-   window.speechSynthesis.cancel();
-   const utterance=new SpeechSynthesisUtterance(text);
-   utterance.lang="en-US";
-   utterance.onstart=()=>status.textContent="🔊 Воспроизведение…";
-   utterance.onend=()=>status.textContent="Воспроизведение завершено.";
-   utterance.onerror=()=>status.textContent="Не удалось воспроизвести звук. Проверь интернет.";
-   window.speechSynthesis.speak(utterance);
+  if("speechSynthesis" in window&&typeof SpeechSynthesisUtterance!=="undefined"){
+   const speech=new SpeechSynthesisUtterance(text);
+   speech.lang="en-US";
+   speech.onstart=()=>{if(myRun===audioRun)status.textContent="🔊 Воспроизведение…";};
+   speech.onend=()=>{if(myRun===audioRun)status.textContent="Воспроизведение завершено.";};
+   speech.onerror=()=>{
+    if(myRun===audioRun)status.textContent="Не удалось воспроизвести звук. Открой приложение в Chrome.";
+   };
+   window.speechSynthesis.speak(speech);
    return;
   }
  }catch(e){}
- status.textContent="Аудио недоступно. Проверь интернет или открой приложение в Chrome.";
+
+ if(myRun===audioRun){
+  status.textContent="Не удалось загрузить звук. Проверь интернет или открой приложение в Chrome.";
+ }
 }
 
-function tryAudio(url,status){
+function tryAudio(url,status,timeoutMs=4000,myRun=audioRun){
  return new Promise(resolve=>{
   let finished=false;
   const audio=new Audio();
   currentAudio=audio;
   audio.preload="auto";
-  const timeout=setTimeout(()=>{
+
+  const timer=setTimeout(()=>finish(false),timeoutMs);
+
+  function finish(success){
    if(finished)return;
    finished=true;
-   audio.pause();
-   resolve(false);
-  },8000);
+   clearTimeout(timer);
+   audio.onplaying=null;
+   audio.onended=null;
+   audio.onerror=null;
+
+   if(myRun!==audioRun)success=false;
+
+   if(!success){
+    try{audio.pause();audio.removeAttribute("src");audio.load();}catch(e){}
+   }else{
+    status.textContent="Воспроизведение завершено.";
+   }
+   resolve(success);
+  }
+
   audio.onplaying=()=>{
-   status.textContent="🔊 Воспроизведение…";
+   if(myRun===audioRun)status.textContent="🔊 Воспроизведение…";
   };
-  audio.onended=()=>{
-   if(finished)return;
-   finished=true;
-   clearTimeout(timeout);
-   status.textContent="Воспроизведение завершено.";
-   resolve(true);
-  };
-  audio.onerror=()=>{
-   if(finished)return;
-   finished=true;
-   clearTimeout(timeout);
-   resolve(false);
-  };
+  audio.onended=()=>finish(true);
+  audio.onerror=()=>finish(false);
   audio.src=url;
-  audio.play().then(()=>{
-   status.textContent="🔊 Воспроизведение…";
-  }).catch(()=>{
-   if(finished)return;
-   finished=true;
-   clearTimeout(timeout);
-   resolve(false);
-  });
+
+  try{
+   const result=audio.play();
+   if(result&&typeof result.catch==="function")result.catch(()=>finish(false));
+  }catch(e){finish(false);}
  });
 }
 
@@ -356,8 +386,7 @@ function renderQuiz(){
   btn.onclick=()=>checkAnswer(option.en===w.en,btn,w.ru);
   box.append(btn);
  });
- document.getElementById("quizScore").textContent=
-  "Правильных ответов за этот запуск: "+correct;
+ document.getElementById("quizScore").textContent="Правильных ответов за этот запуск: "+correct;
 }
 
 function checkAnswer(isCorrect,button,translation){
@@ -376,17 +405,15 @@ function checkAnswer(isCorrect,button,translation){
  }
  document.getElementById("nextQuiz").classList.remove("hidden");
  document.querySelectorAll("#quizOptions button").forEach(b=>b.disabled=true);
- document.getElementById("quizScore").textContent=
-  "Правильных ответов за этот запуск: "+correct;
+ document.getElementById("quizScore").textContent="Правильных ответов за этот запуск: "+correct;
 }
 
-function nextQuestion(){renderQuiz()}
+function nextQuestion(){renderQuiz();}
 
 function updateStats(){
  const learned=data.learned.length;
  document.getElementById("homeLearned").textContent=learned+" из "+words.length;
- document.getElementById("homeProgress").style.width=
-  Math.min(100,learned/words.length*100)+"%";
+ document.getElementById("homeProgress").style.width=Math.min(100,learned/words.length*100)+"%";
  document.getElementById("profileLearned").textContent=learned;
  document.getElementById("profileScore").textContent=data.score;
 }
@@ -400,7 +427,7 @@ function resetProgress(){
 }
 
 try{
- if(window.Telegram && window.Telegram.WebApp){
+ if(window.Telegram&&window.Telegram.WebApp){
   window.Telegram.WebApp.ready();
   window.Telegram.WebApp.expand();
  }
