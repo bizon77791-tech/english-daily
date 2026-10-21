@@ -17,7 +17,7 @@ for (const [, , source] of inlineScripts) {
 }
 
 for (const id of [
-  "photoInput", "originalPreview", "promptInput", "strength", "size",
+  "photoInput", "originalPreview", "promptInput", "apiKey", "quality", "size",
   "editBtn", "status", "resultCard", "resultPreview", "saveBtn", "openBtn"
 ]) {
   assert.ok(html.includes('id="' + id + '"'), "missing required photo editor element id: " + id);
@@ -25,9 +25,8 @@ for (const id of [
 
 assert.match(html, /https:\/\/api\.openai\.com\/v1\/images\/edits/,
   "official OpenAI image editing endpoint should be connected");
-assert.match(html, /model','gpt-image-1\.5/, "GPT Image editing model should be selected");
+assert.match(html, /model\x27,\x27gpt-image-2\.5-sunburst/, "GPT Image 2.5 editing model should be selected");
 assert.match(html, /image\[\]/, "the original image should be sent as multipart image input");
-assert.match(html, /input_fidelity','high/, "high input fidelity should be requested");
 assert.match(html, /apiKey/, "user must be able to enter an API key without embedding it in source code");
 assert.doesNotMatch(html, /aihorde\.net|0000000000|source_processing:\s*'img2img'/,
   "the low-fidelity anonymous AI Horde integration should be removed");
@@ -38,6 +37,6 @@ assert.doesNotMatch(html, /English Daily|englishDailyProgressV2|playPronunciatio
 
 console.log("PASS: HTML document metadata");
 console.log("PASS: inline JavaScript syntax");
-console.log("PASS: photo upload, prompt, strength, and size controls");
-console.log("PASS: AI Horde image-to-image request and status polling");
+console.log("PASS: photo upload, prompt, quality, size, and API-key controls");
+console.log("PASS: OpenAI GPT Image editing request");
 console.log("PASS: result preview and save/open controls");
