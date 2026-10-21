@@ -23,13 +23,14 @@ for (const id of [
   assert.ok(html.includes('id="' + id + '"'), "missing required photo editor element id: " + id);
 }
 
-assert.match(html, /https:\/\/aihorde\.net\/api\/v2\/generate\/async/,
-  "AI Horde generation endpoint should be connected");
-assert.match(html, /generate\/check\//, "generation status polling should be implemented");
-assert.match(html, /source_processing:\s*'img2img'/, "photo-to-photo mode should be configured at the documented top level");
-assert.match(html, /source_image:base64FromDataUrl\(sourceData\)/, "uploaded source image should be sent to AI Horde");
-assert.match(html, /0000000000/, "anonymous no-registration API key should be used");
-assert.doesNotMatch(html, /models:\s*\[['"]AlbedoBase XL/, "do not pin requests to a potentially unavailable model");
+assert.match(html, /https:\/\/api\.openai\.com\/v1\/images\/edits/,
+  "official OpenAI image editing endpoint should be connected");
+assert.match(html, /model','gpt-image-1\.5/, "GPT Image editing model should be selected");
+assert.match(html, /image\[\]/, "the original image should be sent as multipart image input");
+assert.match(html, /input_fidelity','high/, "high input fidelity should be requested");
+assert.match(html, /apiKey/, "user must be able to enter an API key without embedding it in source code");
+assert.doesNotMatch(html, /aihorde\.net|0000000000|source_processing:\s*'img2img'/,
+  "the low-fidelity anonymous AI Horde integration should be removed");
 assert.match(html, /downloadResult/, "saving the resulting image should be implemented");
 assert.match(html, /data-prompt=/, "quick edit prompts should be available");
 assert.doesNotMatch(html, /English Daily|englishDailyProgressV2|playPronunciation|speechSynthesis/i,
