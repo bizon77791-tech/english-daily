@@ -113,36 +113,57 @@
     const payload=canvas.toDataURL('image/webp',0.88).split(',')[1];
     const positive = prompt.trim() + ', preserve the original subject, identity, pose, composition and important details; realistic photo edit, high quality';
     const negative = 'different person, changed identity, extra limbs, distorted face, deformed object, duplicate objects, text, watermark, blurry, low quality';
+    // Выбираем модели с работающими GPU и относительно небольшой очередью.
+    // Если статистика недоступна, Horde использует автоматический выбор.
+    let preferredModels=[];
+    try{
+      setStatus('Проверяем доступные модели и выбираем очередь покороче…');
+      const mr=await fetch('https://aihorde.net/api/v2/status/models',{cache:'no-store'});
+      if(mr.ok){
+        const list=await mr.json();
+        if(Array.isArray(list)){
+          preferredModels=list.filter(m=>m&&typeof m.name==='string'&&Number(m.count||m.worker_count||0)>0)
+            .map(m=>({name:m.name,workers:Number(m.count||m.worker_count||0),queued:Number(m.queued??m.jobs??m.waiting??0)}))
+            .map(m=>({...m,score:(m.queued+1)/m.workers}))
+            .sort((a,b)=>a.score-b.score).slice(0,3).map(m=>m.name);
+        }
+      }
+    }catch(e){}
     const response=await fetch('https://aihorde.net/api/v2/generate/async',{
       method:'POST',
-      headers:{'Content-Type':'application/json','apikey':'0000000000','Client-Agent':'PhotoAI-Telegram-App:1.0.0 (anonymous)'},
+      headers:{'Content-Type':'application/json','apikey':'0000000000','Client-Agent':'PhotoAI-Telegram-App:1.1.0 (anonymous)'},
       body:JSON.stringify({
         prompt:positive+' ### '+negative,
         params:{
           sampler_name:'k_euler',cfg_scale:7,denoising_strength:0.48,
-          height:canvas.height,width:canvas.width,steps:20,n:1,
-          post_processing:[],karras:true,
-          return_control_map:false
+          height:canvas.height,width:canvas.width,steps:16,n:1,
+          post_processing:[],karras:true,return_control_map:false
         },
         source_image:payload,source_processing:'img2img',
-        nsfw:false,censor_nsfw:true,models:[],r2:false
+        nsfw:false,censor_nsfw:true,models:preferredModels,r2:false
       })
     });
     const submitted=await response.json().catch(()=>({}));
     if(!response.ok) throw new Error(submitted.message||submitted.errors?.join(', ')||('AI Horde вернул HTTP '+response.status));
     if(!submitted.id) throw new Error(submitted.message||'Сервис не принял задачу. Попробуй ещё раз позже.');
-    setStatus('Задача отправлена в бесплатную очередь ИИ. Ждём доступный GPU; это может занять несколько минут…');
+    setStatus('Задача отправлена в очередь с выбором менее загруженных моделей. Ждём свободный GPU…'+(preferredModels.length?'\\nВыбраны модели: '+preferredModels.join(', '):'\\nСписок моделей недоступен — используется автоматический выбор.'));
     const deadline=Date.now()+6*60*1000;
     while(Date.now()<deadline){
       await new Promise(resolve=>setTimeout(resolve,5000));
-      const sr=await fetch('https://aihorde.net/api/v2/generate/status/'+encodeURIComponent(submitted.id),{
+      const sr=await fetch('https://aihorde.net/api/v2/generate/check/'+encodeURIComponent(submitted.id),{
         headers:{'apikey':'0000000000','Client-Agent':'PhotoAI-Telegram-App:1.0.0 (anonymous)'}
       });
       const state=await sr.json().catch(()=>({}));
       if(!sr.ok) throw new Error(state.message||'Не удалось проверить статус очереди (HTTP '+sr.status+').');
       if(state.faulted) throw new Error('ИИ не смог обработать изображение. Попробуй другую инструкцию или повтори позже.');
-      if(state.done && state.generations && state.generations.length){
-        const url=state.generations[0].img;
+      if(state.done){
+        const full=await fetch('https://aihorde.net/api/v2/generate/status/'+encodeURIComponent(submitted.id),{
+          headers:{'apikey':'0000000000','Client-Agent':'PhotoAI-Telegram-App:1.1.0 (anonymous)'}
+        });
+        const finalState=await full.json().catch(()=>({}));
+        if(!full.ok) throw new Error(finalState.message||'Генерация завершена, но не удалось получить результат.');
+        if(!finalState.generations||!finalState.generations.length) throw new Error('Задача завершилась без готового изображения.');
+        const url=finalState.generations[0].img;
         if(!url) throw new Error('Сервис завершил задачу без ссылки на изображение.');
         try{
           const imageResponse=await fetch(url);
@@ -154,8 +175,12 @@
         // Некоторые хосты результата запрещают cross-origin fetch. Показываем оригинальный URL.
         return url;
       }
-      const wait=Number(state.wait_time||state.queue_position||0);
-      setStatus('ИИ обрабатывает фото…'+(wait?'\nОжидание в очереди: '+wait:'')+'\nНе закрывай приложение.');
+      const wait=Number(state.wait_time||0);
+      const position=Number(state.queue_position||0);
+      let estimate='';
+      if(wait>0) estimate='\\nПримерное ожидание: '+(wait>=60?Math.ceil(wait/60)+' мин':wait+' сек');
+      else if(position>0) estimate='\\nПозиция в очереди: '+position;
+      setStatus('ИИ обрабатывает фото…'+estimate+'\\nНе закрывай приложение.');
     }
     throw new Error('Бесплатная очередь не успела обработать фото за 6 минут. Повтори позже; результат не был подменён фильтром.');
   }
