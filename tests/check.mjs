@@ -26,8 +26,10 @@ for (const id of [
 assert.match(html, /https:\/\/aihorde\.net\/api\/v2\/generate\/async/,
   "AI Horde generation endpoint should be connected");
 assert.match(html, /generate\/check\//, "generation status polling should be implemented");
-assert.match(html, /source_processing:\s*'img2img'/, "photo-to-photo mode should be configured");
+assert.match(html, /source_processing:\\s*'img2img'/, "photo-to-photo mode should be configured at the documented top level");
+assert.match(html, /source_image:base64FromDataUrl\(sourceData\)/, "uploaded source image should be sent to AI Horde");
 assert.match(html, /0000000000/, "anonymous no-registration API key should be used");
+assert.doesNotMatch(html, /models:\s*\[['"]AlbedoBase XL/, "do not pin requests to a potentially unavailable model");
 assert.match(html, /downloadResult/, "saving the resulting image should be implemented");
 assert.match(html, /data-prompt=/, "quick edit prompts should be available");
 assert.doesNotMatch(html, /English Daily|englishDailyProgressV2|playPronunciation|speechSynthesis/i,
