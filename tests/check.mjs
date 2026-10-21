@@ -17,22 +17,17 @@ for (const [, , source] of inlineScripts) {
 }
 
 for (const id of [
-  "photoInput", "originalPreview", "promptInput", "apiKey", "quality", "size",
+  "photoInput", "originalPreview", "promptInput", "quality", "size",
   "editBtn", "status", "resultCard", "resultPreview", "saveBtn", "openBtn"
 ]) {
   assert.ok(html.includes('id="' + id + '"'), "missing required photo editor element id: " + id);
 }
 
-assert.match(html, /https:\/\/api\.openai\.com\/v1\/images\/edits/,
-  "official OpenAI image editing endpoint should be connected");
-assert.match(html, /model='gpt-image-2\.5-sunburst'/, "OpenAI GPT Image 2.5 editing model should be selected");
-assert.match(html, /image\[\]/, "the original image should be sent as multipart image input");
-assert.match(html, /apiKey/, "user must be able to enter an API key without embedding it in source code");
 assert.doesNotMatch(html, /aihorde\.net|0000000000|source_processing:\s*'img2img'/,
   "the low-fidelity anonymous AI Horde integration should be removed");
 assert.match(html, /downloadResult/, "saving the resulting image should be implemented");
-assert.match(html, /gen\.pollinations\.ai\/v1\/images\/edits/, "Pollinations image editing fallback should be available");
-assert.match(html, /value="local"/, "offline local enhancement mode should be available without an API key");
+assert.doesNotMatch(html, /gen\.pollinations\.ai|api\.openai\.com|apiKey/, "the no-key editor must not require external API keys");
+assert.match(html, /Работает без регистрации, ключей и оплаты/, "the editor should explain that it works without API keys");
 assert.match(html, /localEnhance/, "local enhancement should work without sending the image to a provider");
 assert.match(html, /data-prompt=/, "quick edit prompts should be available");
 assert.doesNotMatch(html, /English Daily|englishDailyProgressV2|playPronunciation|speechSynthesis/i,
@@ -40,6 +35,5 @@ assert.doesNotMatch(html, /English Daily|englishDailyProgressV2|playPronunciatio
 
 console.log("PASS: HTML document metadata");
 console.log("PASS: inline JavaScript syntax");
-console.log("PASS: photo upload, prompt, quality, size, and API-key controls");
-console.log("PASS: OpenAI GPT Image editing request");
+console.log("PASS: photo upload, prompt, quality, size, and no-key local editing");
 console.log("PASS: result preview and save/open controls");
