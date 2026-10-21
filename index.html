@@ -60,21 +60,21 @@
   function setStatus(text,kind){statusEl.textContent=text;statusEl.className='status'+(kind?' '+kind)}
   async function showResultImage(src){
     if(!src||typeof src!=='string')throw new Error('Пустая ссылка на изображение.');
-    const loadDirect=()=>new Promise((resolve,reject)=>{
+    const loadSource=(source)=>new Promise((resolve,reject)=>{
       const timer=setTimeout(()=>{cleanup();reject(new Error('Истекло время загрузки изображения.'))},20000);
       const cleanup=()=>{clearTimeout(timer);resultPreview.onload=null;resultPreview.onerror=null};
-      resultPreview.onload=()=>{cleanup();if(resultPreview.naturalWidth>0)resolve(src);else reject(new Error('Изображение имеет нулевой размер.'))};
+      resultPreview.onload=()=>{cleanup();if(resultPreview.naturalWidth>0)resolve(source);else reject(new Error('Изображение имеет нулевой размер.'))};
       resultPreview.onerror=()=>{cleanup();reject(new Error('Браузер не смог открыть ссылку результата.'))};
-      resultPreview.src=src;
+      resultPreview.src=source;
     });
-    try{await loadDirect();return}catch(directError){
+    try{await loadSource(src);return}catch(directError){
       try{
         const response=await fetch(src,{cache:'no-store'});
         if(!response.ok)throw new Error('HTTP '+response.status);
         const blob=await response.blob();
         if(!blob.type.startsWith('image/'))throw new Error('Сервис вернул файл не в формате изображения ('+(blob.type||'тип не определён')+').');
         const objectUrl=URL.createObjectURL(blob);
-        try{await loadDirect.call(null,objectUrl);return}catch(e){URL.revokeObjectURL(objectUrl);throw e}
+        try{await loadSource(objectUrl);resultUrl=objectUrl;return}catch(e){URL.revokeObjectURL(objectUrl);throw e}
       }catch(fetchError){
         throw new Error(fetchError&&fetchError.message?fetchError.message:(directError&&directError.message?directError.message:'ошибка загрузки файла'));
       }
