@@ -86,7 +86,7 @@
   }
   async function waitForResult(id){
     const start=Date.now();
-    while(Date.now()-start<300000){
+    while(Date.now()-start<900000){
       await new Promise(resolve=>setTimeout(resolve,2500));
       const check=await apiJson('https://aihorde.net/api/v2/generate/check/'+encodeURIComponent(id),{headers:{'apikey':'0000000000'}});
       if(check.faulted)throw new Error('Задача завершилась с ошибкой на стороне сервиса.');
@@ -100,7 +100,7 @@
         return gen.img;
       }
     }
-    throw new Error('Обработка заняла больше 5 минут. Анонимная очередь может быть перегружена; попробуй позже.');
+    throw new Error('Обработка заняла больше 15 минут. Анонимная очередь может быть перегружена; попробуй позже.');
   }
   editBtn.addEventListener('click',async()=>{
     if(busy)return;
@@ -115,18 +115,19 @@
         params:{
           width:dim,height:dim,steps:25,cfg_scale:7,
           denoising_strength:Number(document.getElementById('strength').value),
-          source_processing:'img2img',source_image:base64FromDataUrl(sourceData),
           sampler_name:'k_euler_a',karras:true,n:1
         },
-        nsfw:false,censor_nsfw:true,r2:true,shared:false,
-        models:['AlbedoBase XL (SDXL)']
+        source_processing:'img2img',
+        source_image:base64FromDataUrl(sourceData),
+        nsfw:false,censor_nsfw:true,r2:true,shared:false
+        // Не фиксируем одну модель: AI Horde сам выбирает доступную модель и воркеры.
       };
       const queued=await apiJson('https://aihorde.net/api/v2/generate/async',{
         method:'POST',headers:{'Content-Type':'application/json','apikey':'0000000000','Client-Agent':'foto-ai-telegram:1.0'},
         body:JSON.stringify(body)
       });
       if(!queued.id)throw new Error(queued.message||'Сервис не принял задачу.');
-      setStatus('Задача принята. Ожидаем свободный компьютер в общей очереди…');
+      setStatus('Задача принята. Ожидаем свободный компьютер в общей очереди. Анонимные запросы могут обрабатываться долго…');
       const image=await waitForResult(queued.id);
       resultUrl=image.startsWith('http')?image:(image.startsWith('data:')?image:'data:image/webp;base64,'+image);
       resultPreview.src=resultUrl;resultCard.classList.remove('hidden');
