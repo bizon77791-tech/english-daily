@@ -1,454 +1,685 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <meta name="theme-color" content="#101827">
-<title>English Daily — учи английский каждый день</title>
+<title>English Daily — английский по разделам</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#101827;color:#f4f7fb;font-family:Arial,sans-serif}
-header{padding:22px 18px;background:#172338}
-h1{margin:0 0 7px;font-size:26px}
-header p{margin:0;color:#b9c5d8}
-main{padding:16px;max-width:600px;margin:auto;padding-bottom:100px}
-.card{background:#1b2940;border:1px solid #30415c;border-radius:18px;padding:18px;margin-bottom:15px}
-h2{font-size:20px;margin:0 0 14px}
-button{border:0;border-radius:12px;padding:13px 15px;font-size:15px;font-weight:bold;cursor:pointer}
-button:disabled{opacity:.6}
-.primary{background:#65e6ad;color:#10251d;width:100%}
-.secondary{background:#30415c;color:white;width:100%;margin-top:10px}
-.word{font-size:32px;font-weight:bold;text-align:center;margin:20px 0 8px}
-.translation{text-align:center;color:#c5d0e0;font-size:19px;margin-bottom:16px}
-.example{text-align:center;color:#aabbd4;line-height:1.5;margin:12px 0}
-.option{display:block;width:100%;text-align:left;margin:8px 0;background:#30415c;color:white;border:1px solid #425672}
-.progress{height:9px;background:#30415c;border-radius:9px;overflow:hidden;margin:10px 0}
-.progress div{height:100%;background:#65e6ad;width:0;transition:width .2s}
-nav{position:fixed;bottom:0;left:0;right:0;background:#172338;display:flex;justify-content:space-around;padding:8px 4px calc(8px + env(safe-area-inset-bottom));border-top:1px solid #30415c;z-index:5}
-nav button{background:transparent;color:#bdc9da;padding:10px 7px;font-size:12px}
-nav button.active{color:#65e6ad}
-.small{font-size:13px;color:#aabbd4;line-height:1.5}
-.stat{font-size:25px;font-weight:bold;color:#65e6ad}
-.wordrow{display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid #30415c;padding:12px 0}
-.wordrow:last-child{border:0}
-.mini{background:#30415c;color:white;padding:9px 12px}
-.status{font-size:13px;text-align:center;color:#aabbd4;min-height:20px;margin-top:10px;line-height:1.4}
-.hidden{display:none!important}
+*{box-sizing:border-box}body{margin:0;background:#101827;color:#f4f7fb;font-family:Arial,sans-serif}header{padding:20px 18px;background:#172338}h1{margin:0 0 7px;font-size:25px}header p{margin:0;color:#b9c5d8}main{padding:14px;max-width:680px;margin:auto;padding-bottom:95px}.card{background:#1b2940;border:1px solid #30415c;border-radius:17px;padding:16px;margin-bottom:13px}h2{font-size:19px;margin:0 0 12px}h3{font-size:16px;margin:14px 0 8px}.small{font-size:13px;color:#aabbd4;line-height:1.5}.stat{font-size:24px;font-weight:bold;color:#65e6ad}.progress{height:8px;background:#30415c;border-radius:8px;overflow:hidden;margin:10px 0}.progress div{height:100%;background:#65e6ad;width:0;transition:width .2s}button,input,select{font:inherit}button{border:0;border-radius:11px;padding:12px;font-weight:bold;cursor:pointer}.primary{background:#65e6ad;color:#10251d;width:100%}.secondary{background:#30415c;color:white;width:100%;margin-top:8px}.tile{display:block;width:100%;text-align:left;background:#243650;color:white;border:1px solid #405675;margin:8px 0;padding:14px}.tile strong{display:block;font-size:16px;margin-bottom:5px}.tile span{font-size:13px;color:#bdc9da;font-weight:normal}.word{font-size:32px;font-weight:bold;text-align:center;margin:22px 0 8px;overflow-wrap:anywhere}.translation{text-align:center;color:#c5d0e0;font-size:19px;margin-bottom:14px}.example{text-align:center;color:#aabbd4;line-height:1.5;margin:12px 0}.option{display:block;width:100%;text-align:left;margin:8px 0;background:#30415c;color:white;border:1px solid #425672}.wordrow{display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid #30415c;padding:11px 0}.wordrow:last-child{border:0}.mini{background:#30415c;color:white;padding:8px 10px;flex-shrink:0}.controls{display:flex;gap:8px;align-items:center;margin:10px 0}.controls>*{min-width:0;flex:1}.field{width:100%;padding:12px;border-radius:10px;border:1px solid #405675;background:#101827;color:white}.hidden{display:none!important}nav{position:fixed;bottom:0;left:0;right:0;background:#172338;display:flex;justify-content:space-around;padding:7px 3px calc(7px + env(safe-area-inset-bottom));border-top:1px solid #30415c;z-index:5}nav button{background:transparent;color:#bdc9da;padding:9px 5px;font-size:11px}nav button.active{color:#65e6ad}.notice{background:#243650;padding:10px;border-radius:10px;color:#c5d0e0;font-size:13px;line-height:1.5}
 </style>
 </head>
 <body>
-<header>
-<h1>📘 English Daily</h1>
-<p>Немного английского каждый день</p>
-</header>
-
+<header><h1>📘 English Daily</h1><p>Слова, числа, фразы и предложения — по отдельным разделам</p></header>
 <main>
 <section id="tab-home">
-<div class="card">
-<h2>Привет! 👋</h2>
-<p>Учи новые слова, слушай произношение и проверяй себя.</p>
-<div class="small">Изучено слов</div>
-<div class="stat" id="homeLearned">0 слов</div>
-<div class="progress"><div id="homeProgress"></div></div>
-<button class="primary" onclick="showTab('words')">Начать обучение</button>
-</div>
-<div class="card">
-<h2>📅 План на сегодня</h2>
-<p>Изучи несколько слов и пройди небольшой тест.</p>
-<p class="small">Совет: повторяй слова вслух и составляй с ними собственные предложения.</p>
-<button class="secondary" onclick="showTab('quiz')">Пройти тест</button>
-</div>
+<div class="card"><h2>Начни с нужного раздела</h2><p class="small">Учись небольшими блоками. Прогресс сохраняется на этом устройстве.</p><div class="small">Отмечено как изученное</div><div class="stat" id="homeLearned">0</div><div class="progress"><div id="homeProgress"></div></div></div>
+<div class="card"><button class="tile" onclick="openModule('words')"><strong>📚 Слова</strong><span>Базовая лексика по темам: люди, дом, еда, работа, поездки и другое</span></button><button class="tile" onclick="openModule('numbers')"><strong>🔢 Числа и цифры</strong><span>Числа, возраст, время, даты, цены и порядковые числительные</span></button><button class="tile" onclick="openModule('phrases')"><strong>💬 Словосочетания и фразы</strong><span>Готовые выражения для повседневного общения</span></button><button class="tile" onclick="openModule('sentences')"><strong>🗣 Предложения</strong><span>Примеры с переводом: вопросы, ответы и бытовые ситуации</span></button><button class="tile" onclick="showTab('quiz')"><strong>🧠 Тест</strong><span>Проверка слов, чисел, фраз и предложений</span></button></div>
+<div class="card"><h2>Как будет расти словарь</h2><p class="small">Это начальная база, а не весь английский язык. Структура подготовлена для последовательного расширения по уровням A1 → A2 → B1, с тематическими группами, примерами и повторением. Новые разделы не требуют озвучки.</p></div>
 </section>
-
-<section id="tab-words" class="hidden">
-<div class="card">
-<h2>📚 Изучение слов</h2>
-<div class="small" id="wordCounter"></div>
-<div class="progress"><div id="wordProgress"></div></div>
-<div class="word" id="englishWord"></div>
-<div class="translation" id="russianWord"></div>
-<div class="example" id="wordExample"></div>
-<button class="primary" onclick="playWord()">🔊 Слушать произношение</button>
-<div class="status" id="audioStatus" aria-live="polite"></div>
-<button class="secondary" onclick="markLearned()">✓ Знаю это слово</button>
-<button class="secondary" onclick="nextWord()">Следующее слово →</button>
-</div>
-</section>
-
-<section id="tab-list" class="hidden">
-<div class="card">
-<h2>🗂 Все слова</h2>
-<p class="small">Нажми на кнопку, чтобы услышать произношение.</p>
-<div id="allWords"></div>
-</div>
-</section>
-
-<section id="tab-quiz" class="hidden">
-<div class="card">
-<h2>🧠 Проверь себя</h2>
-<p class="small">Выбери правильный перевод английского слова.</p>
-<div class="word" id="quizWord"></div>
-<div id="quizOptions"></div>
-<p id="feedback" class="example"></p>
-<p id="quizScore" class="small"></p>
-<button class="primary hidden" id="nextQuiz" onclick="nextQuestion()">Следующий вопрос →</button>
-<button class="secondary" onclick="renderQuiz()">Начать заново</button>
-</div>
-</section>
-
-<section id="tab-profile" class="hidden">
-<div class="card">
-<h2>👤 Мой прогресс</h2>
-<p>Выучено слов</p>
-<div class="stat" id="profileLearned">0</div>
-<p>Правильных ответов в тестах</p>
-<div class="stat" id="profileScore">0</div>
-<p class="small">Прогресс сохраняется в браузере на этом устройстве.</p>
-<button class="secondary" onclick="resetProgress()">Сбросить прогресс</button>
-</div>
-<div class="card">
-<h2>💡 Как учиться эффективнее</h2>
-<p>1. Слушай произношение.</p>
-<p>2. Прочитай слово вслух.</p>
-<p>3. Вспомни перевод, не подглядывая.</p>
-<p>4. Повтори трудные слова на следующий день.</p>
-</div>
-</section>
+<section id="tab-study" class="hidden"><div class="card"><h2 id="moduleTitle">Обучение</h2><div class="small" id="moduleCounter"></div><div class="progress"><div id="moduleProgress"></div></div><div class="word" id="studyEn"></div><div class="translation" id="studyRu"></div><div class="example" id="studyEx"></div><button class="primary" onclick="markLearned()">✓ Знаю материал</button><div class="controls"><button class="secondary" onclick="previousItem()">← Назад</button><button class="secondary" onclick="nextItem()">Дальше →</button></div><button class="secondary" onclick="showTab('library')">Открыть весь раздел списком</button></div></section>
+<section id="tab-library" class="hidden"><div class="card"><h2 id="libraryTitle">Справочник</h2><input id="searchItems" class="field" placeholder="Поиск на английском или русском" oninput="renderLibrary()"><div class="controls"><select id="categoryFilter" class="field" onchange="renderLibrary()"><option value="all">Все темы</option></select><select id="typeFilter" class="field" onchange="renderLibrary()"><option value="all">Все типы</option><option value="new">Не изучено</option><option value="learned">Изучено</option></select></div><div class="small" id="libraryCount"></div><div id="libraryItems"></div></div></section>
+<section id="tab-quiz" class="hidden"><div class="card"><h2>🧠 Проверь себя</h2><select id="quizModule" class="field" onchange="renderQuiz()"><option value="all">Все разделы</option><option value="words">Слова</option><option value="numbers">Числа</option><option value="phrases">Фразы</option><option value="sentences">Предложения</option></select><p class="small">Выбери правильный перевод.</p><div class="word" id="quizEn"></div><div id="quizOptions"></div><p id="quizFeedback" class="example"></p><p id="quizScore" class="small"></p><button class="primary hidden" id="nextQuiz" onclick="renderQuiz()">Следующий вопрос →</button></div></section>
+<section id="tab-profile" class="hidden"><div class="card"><h2>👤 Мой прогресс</h2><p>Изучено элементов</p><div class="stat" id="profileLearned">0</div><p>Правильных ответов в тестах</p><div class="stat" id="profileScore">0</div><p class="small">Данные хранятся в браузере этого устройства. При очистке данных браузера прогресс может потеряться.</p><button class="secondary" onclick="resetProgress()">Сбросить прогресс</button></div></section>
 </main>
-
-<nav>
-<button id="nav-home" class="active" onclick="showTab('home')">🏠 Главная</button>
-<button id="nav-words" onclick="showTab('words')">📖 Учить</button>
-<button id="nav-list" onclick="showTab('list')">🗂 Слова</button>
-<button id="nav-quiz" onclick="showTab('quiz')">🧠 Тест</button>
-<button id="nav-profile" onclick="showTab('profile')">👤 Профиль</button>
-</nav>
-
+<nav><button id="nav-home" class="active" onclick="showTab('home')">🏠 Главная</button><button id="nav-study" onclick="showTab('study')">📖 Учить</button><button id="nav-library" onclick="showTab('library')">🗂 Справочник</button><button id="nav-quiz" onclick="showTab('quiz')">🧠 Тест</button><button id="nav-profile" onclick="showTab('profile')">👤 Прогресс</button></nav>
 <script>
-const words = [
-{en:"hello",ru:"привет",ex:"Hello! How are you?"},
-{en:"house",ru:"дом",ex:"This is my house."},
-{en:"water",ru:"вода",ex:"I drink water every day."},
-{en:"food",ru:"еда",ex:"The food is very good."},
-{en:"friend",ru:"друг",ex:"He is my best friend."},
-{en:"work",ru:"работа; работать",ex:"I work every day."},
-{en:"learn",ru:"учить; изучать",ex:"I want to learn English."},
-{en:"book",ru:"книга",ex:"This is an interesting book."},
-{en:"family",ru:"семья",ex:"My family is very important to me."},
-{en:"time",ru:"время",ex:"What time is it?"},
-{en:"good",ru:"хороший; хорошо",ex:"Have a good day!"},
-{en:"today",ru:"сегодня",ex:"I am busy today."},
-{en:"tomorrow",ru:"завтра",ex:"See you tomorrow."},
-{en:"beautiful",ru:"красивый",ex:"What a beautiful place!"},
-{en:"help",ru:"помощь; помогать",ex:"Can you help me?"},
-{en:"money",ru:"деньги",ex:"I need some money."},
-{en:"travel",ru:"путешествовать",ex:"I like to travel."},
-{en:"happy",ru:"счастливый",ex:"I am happy today."},
-{en:"understand",ru:"понимать",ex:"I understand you."},
-{en:"important",ru:"важный",ex:"English is important for my work."}
-];
+const moduleNames={words:"📚 Изучение слов",numbers:"🔢 Числа и цифры",phrases:"💬 Словосочетания и фразы",sentences:"🗣 Изучение предложений"};
+const items=[];
+function add(module,category,rows){rows.trim().split("\n").filter(Boolean).forEach(line=>{const p=line.split("|");items.push({id:module+"-"+items.length,module,category,en:p[0],ru:p[1],ex:p[2]||""})})}
+add("words","Люди и общение",`person|человек|One person is waiting.
+people|люди|People are friendly here.
+man|мужчина|The man is my brother.
+woman|женщина|The woman is a doctor.
+child|ребёнок|The child is sleeping.
+boy|мальчик|The boy is at school.
+girl|девочка|The girl is happy.
+family|семья|My family is important to me.
+mother|мать|My mother is at home.
+father|отец|My father works here.
+parent|родитель|Every parent wants to help.
+son|сын|Their son is ten.
+daughter|дочь|My daughter likes books.
+brother|брат|My brother lives nearby.
+sister|сестра|My sister is a student.
+husband|муж|Her husband is kind.
+wife|жена|His wife is a teacher.
+friend|друг|You are my friend.
+neighbor|сосед|Our neighbor is helpful.
+name|имя|What is your name?`);
+add("words","Основные глаголы",`be|быть|I want to be ready.
+have|иметь; иметься|I have a question.
+do|делать|What do you do?
+make|делать; создавать|I make breakfast.
+go|идти; ехать|We go to work.
+come|приходить|Please come here.
+get|получать; добираться|I get home at six.
+give|давать|Give me a minute.
+take|брать|Take your bag.
+put|класть|Put it on the table.
+know|знать|I know the answer.
+think|думать|I think you are right.
+understand|понимать|I understand the question.
+want|хотеть|I want some water.
+need|нуждаться; нужно|I need your help.
+like|нравиться|I like this song.
+love|любить|I love my family.
+use|использовать|I use my phone every day.
+work|работать; работа|I work from home.
+live|жить|We live in the city.
+look|смотреть|Look at this picture.
+see|видеть|I can see the sea.
+watch|смотреть (видео)|We watch a film.
+hear|слышать|I can hear you.
+listen|слушать|Listen to the teacher.
+speak|говорить|Do you speak English?
+say|сказать|What did you say?
+tell|рассказывать; сообщать|Tell me the truth.
+ask|спрашивать|Can I ask a question?
+answer|отвечать; ответ|Please answer me.
+read|читать|I read every evening.
+write|писать|Write your name here.
+learn|учить; изучать|I learn English.
+study|заниматься; изучать|I study every day.
+teach|обучать|They teach English.
+remember|помнить|Remember this word.
+forget|забывать|Do not forget your keys.
+find|находить|I cannot find my phone.
+try|пробовать; пытаться|Try one more time.
+start|начинать|We start at nine.
+finish|заканчивать|I finish work at five.
+wait|ждать|Please wait here.
+help|помогать; помощь|Can you help me?
+buy|покупать|I want to buy bread.
+pay|платить|Can I pay by card?
+open|открывать|Open the window.
+close|закрывать|Close the door.
+eat|есть|We eat together.
+drink|пить|I drink tea.
+cook|готовить|I cook dinner.
+sleep|спать|I sleep well.
+wake up|просыпаться|I wake up early.
+walk|гулять; идти пешком|I walk to work.
+drive|водить машину|I drive to the office.
+travel|путешествовать|We travel in summer.
+meet|встречать; знакомиться|Nice to meet you.
+call|звонить; называть|Call me tomorrow.
+send|отправлять|Send me a message.
+keep|хранить; продолжать|Keep the receipt.
+change|менять; изменение|I need to change my plan.
+feel|чувствовать|I feel better today.
+become|становиться|It becomes cold in winter.`);
+add("words","Дом и вещи",`house|дом|This is our house.
+home|дом; дома|I am going home.
+room|комната|My room is small.
+kitchen|кухня|The kitchen is clean.
+bathroom|ванная комната|The bathroom is upstairs.
+bedroom|спальня|The bedroom has a window.
+door|дверь|Please close the door.
+window|окно|Open the window, please.
+wall|стена|The picture is on the wall.
+floor|пол; этаж|The floor is clean.
+ceiling|потолок|The ceiling is white.
+table|стол|The keys are on the table.
+chair|стул|Take a chair.
+bed|кровать|The bed is comfortable.
+sofa|диван|Sit on the sofa.
+lamp|лампа|Turn on the lamp.
+light|свет|I need more light.
+key|ключ|Where is my key?
+phone|телефон|My phone is new.
+computer|компьютер|The computer is on.
+screen|экран|Look at the screen.
+bag|сумка|My bag is heavy.
+box|коробка|The box is empty.
+bottle|бутылка|A bottle of water, please.
+cup|чашка|This is my cup.
+plate|тарелка|Put it on a plate.
+knife|нож|The knife is sharp.
+fork|вилка|I need a fork.
+spoon|ложка|Take a spoon.
+towel|полотенце|The towel is dry.
+soap|мыло|We need soap.
+clothes|одежда|My clothes are clean.
+shirt|рубашка|This shirt is blue.
+shoes|обувь; туфли|My shoes are comfortable.
+coat|пальто|Take your coat.
+watch|часы наручные|My watch is slow.
+book|книга|This book is useful.
+paper|бумага|Write it on paper.
+pen|ручка|Do you have a pen?
+picture|картина; изображение|I like this picture.
+thing|вещь|What is this thing?`);
+add("words","Еда и напитки",`food|еда|The food is delicious.
+water|вода|I drink water every day.
+tea|чай|Would you like tea?
+coffee|кофе|I drink coffee in the morning.
+milk|молоко|The child drinks milk.
+bread|хлеб|We need some bread.
+butter|масло сливочное|Bread and butter, please.
+cheese|сыр|I like this cheese.
+egg|яйцо|I eat an egg for breakfast.
+meat|мясо|The meat is ready.
+chicken|курица|We have chicken for dinner.
+fish|рыба|I like fresh fish.
+rice|рис|Rice is easy to cook.
+potato|картофель|I need a potato.
+vegetable|овощ|Eat more vegetables.
+fruit|фрукты|Fresh fruit is good.
+apple|яблоко|I eat an apple.
+banana|банан|This banana is ripe.
+orange|апельсин|Would you like an orange?
+soup|суп|The soup is hot.
+salad|салат|I will make a salad.
+sugar|сахар|No sugar in my tea.
+salt|соль|Add a little salt.
+breakfast|завтрак|Breakfast is ready.
+lunch|обед|We have lunch at one.
+dinner|ужин|Dinner is at seven.
+meal|приём пищи|It is my favourite meal.
+hungry|голодный|I am hungry.
+thirsty|испытывающий жажду|I am thirsty.
+sweet|сладкий|This cake is sweet.
+fresh|свежий|The bread is fresh.
+hot|горячий; жаркий|The tea is hot.
+cold|холодный|The water is cold.
+delicious|вкусный|This food is delicious.
+menu|меню|Can I see the menu?
+bill|счёт|Could I have the bill?`);
+add("words","Время и повседневность",`time|время|What time is it?
+day|день|Have a nice day.
+week|неделя|See you next week.
+month|месяц|Next month is busy.
+year|год|This year is important.
+morning|утро|Good morning!
+afternoon|день (после полудня)|See you this afternoon.
+evening|вечер|Good evening.
+night|ночь|Good night.
+today|сегодня|I am busy today.
+tomorrow|завтра|See you tomorrow.
+yesterday|вчера|I was at home yesterday.
+now|сейчас|I need it now.
+later|позже|Call me later.
+early|рано|I get up early.
+late|поздно; опаздывающий|Sorry, I am late.
+hour|час|Wait one hour.
+minute|минута|Just a minute.
+second|секунда|Wait a second.
+always|всегда|I always drink tea.
+usually|обычно|I usually walk to work.
+often|часто|We often meet.
+sometimes|иногда|Sometimes I cook.
+never|никогда|I never smoke.
+before|до; перед|Call me before lunch.
+after|после|We can talk after work.
+first|первый; сначала|This is my first day.
+last|последний; прошлый|I saw him last week.
+next|следующий|See you next time.
+again|снова|Please say it again.`);
+add("words","Места и поездки",`place|место|This is a nice place.
+city|город|The city is large.
+town|небольшой город|I live in a small town.
+country|страна; сельская местность|Which country are you from?
+street|улица|Our street is quiet.
+road|дорога|The road is long.
+shop|магазин|The shop is open.
+store|магазин|I am going to the store.
+market|рынок|The market is busy.
+school|школа|The school is nearby.
+university|университет|She studies at university.
+office|офис|The office is closed.
+hospital|больница|The hospital is near here.
+bank|банк|The bank opens at nine.
+hotel|отель|We booked a hotel.
+restaurant|ресторан|This restaurant is popular.
+station|станция; вокзал|Meet me at the station.
+airport|аэропорт|The airport is far away.
+bus|автобус|The bus is late.
+train|поезд|The train arrives soon.
+car|машина|My car is outside.
+taxi|такси|Let's take a taxi.
+ticket|билет|I bought a ticket.
+map|карта|Look at the map.
+left|левый; налево|Turn left here.
+right|правый; направо|Turn right at the light.
+straight|прямо|Go straight ahead.
+near|близко|The shop is near.
+far|далеко|Is it far from here?
+here|здесь|Come here, please.
+there|там|Put it there.
+entrance|вход|Where is the entrance?
+exit|выход|The exit is on the left.
+trip|поездка|Have a nice trip.
+journey|путешествие; путь|The journey takes two hours.
+luggage|багаж|Where is my luggage?`);
+add("words","Работа и учёба",`job|работа; должность|I need a new job.
+work|работа; работать|I have a lot of work.
+company|компания|The company is growing.
+business|бизнес; дело|She runs a small business.
+boss|начальник|My boss is helpful.
+colleague|коллега|My colleague is here.
+customer|клиент|The customer has a question.
+meeting|встреча; совещание|The meeting starts at ten.
+plan|план|That is a good plan.
+idea|идея|I have an idea.
+problem|проблема|We have a problem.
+question|вопрос|Can I ask a question?
+answer|ответ|I know the answer.
+task|задача|This task is easy.
+project|проект|The project is ready.
+computer|компьютер|I use a computer at work.
+email|электронное письмо|I sent an email.
+message|сообщение|I got your message.
+file|файл|Open the file.
+document|документ|Please read this document.
+language|язык|English is a useful language.
+word|слово|Learn one new word.
+sentence|предложение|Write a sentence.
+meaning|значение; смысл|What is the meaning?
+example|пример|Here is an example.
+mistake|ошибка|Everyone makes mistakes.
+practice|практика; практиковаться|Practice every day.
+easy|лёгкий|This exercise is easy.
+difficult|трудный|This question is difficult.
+important|важный|This is important.
+ready|готовый|I am ready.
+busy|занятый|I am busy today.
+free|свободный; бесплатный|Are you free tomorrow?
+money|деньги|I need some money.
+price|цена|What is the price?
+cost|стоить; стоимость|How much does it cost?
+cheap|дешёвый|This ticket is cheap.
+expensive|дорогой|The hotel is expensive.`);
+add("words","Прилагательные и описания",`good|хороший|Have a good day.
+bad|плохой|That is a bad idea.
+great|отличный; великий|You did a great job.
+small|маленький|I have a small room.
+big|большой|That is a big house.
+large|крупный; большой|They have a large family.
+long|длинный|It is a long road.
+short|короткий; низкий|The meeting is short.
+high|высокий|The price is high.
+low|низкий|The table is low.
+new|новый|My phone is new.
+old|старый|This building is old.
+young|молодой|He is young.
+beautiful|красивый|What a beautiful view!
+ugly|некрасивый|The weather is ugly. 
+happy|счастливый|I am happy today.
+sad|грустный|Why are you sad?
+angry|сердитый|He is angry.
+tired|уставший|I am tired after work.
+strong|сильный|She is strong.
+weak|слабый|I feel weak today.
+fast|быстрый|This car is fast.
+slow|медленный|The internet is slow.
+clean|чистый|The room is clean.
+dirty|грязный|My shoes are dirty.
+full|полный|The bus is full.
+empty|пустой|The bottle is empty.
+safe|безопасный|This place is safe.
+dangerous|опасный|That road is dangerous.
+right|правильный; правый|Your answer is right.
+wrong|неправильный|Something is wrong.
+different|разный; другой|We have different ideas.
+same|тот же самый|We have the same phone.
+possible|возможный|Is it possible?
+sure|уверенный; конечно|Are you sure?
+interesting|интересный|This book is interesting.
+boring|скучный|The film is boring.
+kind|добрый|She is very kind.
+careful|осторожный|Be careful.
+healthy|здоровый|Fresh food is healthy.`);
+add("words","Природа и погода",`weather|погода|The weather is nice.
+sun|солнце|The sun is bright.
+rain|дождь|The rain is heavy.
+snow|снег|There is snow outside.
+wind|ветер|The wind is strong.
+cloud|облако|A cloud is grey.
+sky|небо|The sky is blue.
+sea|море|The sea is cold.
+river|река|The river is wide.
+lake|озеро|The lake is beautiful.
+mountain|гора|We can see a mountain.
+forest|лес|The forest is quiet.
+tree|дерево|That tree is old.
+flower|цветок|This flower is beautiful.
+grass|трава|The grass is green.
+animal|животное|I like this animal.
+dog|собака|The dog is friendly.
+cat|кошка|The cat is sleeping.
+bird|птица|A bird is in the tree.
+fish|рыба|I can see a fish.
+cold|холодный|It is cold today.
+warm|тёплый|The room is warm.
+hot|жаркий|It is hot outside.
+cool|прохладный|The evening is cool.
+dry|сухой|The ground is dry.
+wet|мокрый|My coat is wet.
+spring|весна|Spring is beautiful.
+summer|лето|I travel in summer.
+autumn|осень|Autumn is cold here.
+winter|зима|Winter is long.`);
+add("words","Здоровье и тело",`body|тело|Move your body.
+head|голова|My head hurts.
+face|лицо|Wash your face.
+eye|глаз|My eyes are tired.
+ear|ухо|My ear hurts.
+nose|нос|My nose is cold.
+mouth|рот|Open your mouth.
+tooth|зуб|My tooth hurts.
+hand|кисть; рука|Wash your hands.
+arm|рука|He broke his arm.
+leg|нога|My leg hurts.
+foot|ступня|My foot is cold.
+back|спина|My back hurts.
+heart|сердце|My heart is healthy.
+stomach|живот; желудок|My stomach hurts.
+doctor|врач|I need a doctor.
+nurse|медсестра|The nurse is kind.
+medicine|лекарство|Take your medicine.
+pain|боль|I have a pain here.
+sick|больной|I feel sick.
+ill|больной|She is ill today.
+healthy|здоровый|I want to stay healthy.
+rest|отдыхать; отдых|You need some rest.
+sleep|сон; спать|Sleep is important.
+exercise|упражнение|Do this exercise daily.`);
+add("words","Вопросы и служебные слова",`who|кто|Who is that?
+what|что; какой|What is your name?
+where|где; куда|Where do you live?
+when|когда|When do we start?
+why|почему|Why are you here?
+how|как|How are you?
+which|который; какой|Which one do you want?
+whose|чей|Whose bag is this?
+this|это; этот|This is my book.
+that|то; тот|That is my car.
+these|эти|These shoes are new.
+those|те|Those people are friends.
+I|я|I am ready.
+you|ты; вы|You are welcome.
+he|он|He is my friend.
+she|она|She is at work.
+it|это; оно|It is cold.
+we|мы|We are here.
+they|они|They are busy.
+and|и|Tea and coffee.
+or|или|Tea or coffee?
+but|но|I am tired, but happy.
+because|потому что|I stayed because it rained.
+if|если|Call me if you need help.
+with|с|Come with me.
+without|без|Coffee without sugar.
+for|для; в течение|This is for you.
+from|из; от|I am from Russia.
+to|к; в; чтобы|I go to work.
+in|в|I live in a city.
+on|на|The book is on the table.
+at|в; у|Meet me at six.
+under|под|The cat is under the table.
+over|над; через|The plane is over the city.
+between|между|Sit between us.
+about|о; около|Tell me about it.
+before|до; перед|Before dinner.
+after|после|After work.
+very|очень|It is very good.
+too|тоже; слишком|I am tired too.
+only|только|I have one day only.
+also|также|She also speaks English.
+more|больше; ещё|I need more time.
+less|меньше|Eat less sugar.
+some|немного; несколько|I need some water.
+any|какой-нибудь; нисколько|Do you have any questions?
+all|все; весь|All people need water.
+many|много (исчисляемое)|Many people work here.
+much|много (неисчисляемое)|How much is it?
+few|мало; несколько|I have a few minutes.
+every|каждый|Every day is a new chance.`);
+const numberWords=[["zero","ноль"],["one","один"],["two","два"],["three","три"],["four","четыре"],["five","пять"],["six","шесть"],["seven","семь"],["eight","восемь"],["nine","девять"],["ten","десять"],["eleven","одиннадцать"],["twelve","двенадцать"],["thirteen","тринадцать"],["fourteen","четырнадцать"],["fifteen","пятнадцать"],["sixteen","шестнадцать"],["seventeen","семнадцать"],["eighteen","восемнадцать"],["nineteen","девятнадцать"],["twenty","двадцать"],["thirty","тридцать"],["forty","сорок"],["fifty","пятьдесят"],["sixty","шестьдесят"],["seventy","семьдесят"],["eighty","восемьдесят"],["ninety","девяносто"],["one hundred","сто"],["one thousand","тысяча"],["one million","миллион"]];
+numberWords.forEach((n,i)=>items.push({id:"num-"+i,module:"numbers",category:"Количественные числа",en:n[0],ru:n[1],ex:i<20?("I have "+n[0]+" book"+(i===1?"":"s")+"."):"The number is "+n[0]+"."}));
+for(let n=21;n<100;n++){if(n%10){const tens=Math.floor(n/10)*10;const tensMap={20:"twenty",30:"thirty",40:"forty",50:"fifty",60:"sixty",70:"seventy",80:"eighty",90:"ninety"};const unit=numberWords[n%10][0];items.push({id:"num-"+n,module:"numbers",category:"Составные числа",en:tensMap[tens]+"-"+unit,ru:({1:"один",2:"два",3:"три",4:"четыре",5:"пять",6:"шесть",7:"семь",8:"восемь",9:"девять"})[n%10]+" "+({20:"двадцать",30:"тридцать",40:"сорок",50:"пятьдесят",60:"шестьдесят",70:"семьдесят",80:"восемьдесят",90:"девяносто"})[tens],ex:"The number is "+tensMap[tens]+"-"+unit+"."})}}
+add("numbers","Порядковые числа",`first|первый|This is my first lesson.
+second|второй|Take the second street.
+third|третий|Today is the third of May.
+fourth|четвёртый|I live on the fourth floor.
+fifth|пятый|This is the fifth question.
+sixth|шестой|Read the sixth line.
+seventh|седьмой|The seventh day is Sunday.
+eighth|восьмой|This is the eighth lesson.
+ninth|девятый|Turn at the ninth street.
+tenth|десятый|The tenth page is missing.
+eleventh|одиннадцатый|He finished eleventh.
+twelfth|двенадцатый|December is the twelfth month.
+twentieth|двадцатый|This is the twentieth day.`);
+add("numbers","Числа в жизни",`How much is it?|Сколько это стоит?|How much is it? It is ten dollars.
+How old are you?|Сколько тебе лет?|How old are you? I am twenty.
+What time is it?|Который час?|What time is it? It is five o'clock.
+half past three|половина четвёртого|The meeting is at half past three.
+quarter past two|четверть третьего|It is quarter past two.
+quarter to six|без четверти шесть|It is quarter to six.
+one hundred and one|сто один|One hundred and one people came.
+two hundred|двести|The ticket costs two hundred.
+three thousand|три тысячи|The town has three thousand people.
+a dozen|дюжина; двенадцать|I bought a dozen eggs.
+a pair|пара|I need a pair of shoes.
+first of May|первое мая|My holiday starts on the first of May.
+twenty percent|двадцать процентов|The discount is twenty percent.
+number|число; номер|What is your room number?
+date|дата|What is the date today?
+age|возраст|Age is just a number.
+price|цена|The price is fifty pounds.`);
+add("phrases","Приветствие и вежливость",`Hello!|Привет!
+Good morning.|Доброе утро.
+Good afternoon.|Добрый день.
+Good evening.|Добрый вечер.
+Good night.|Спокойной ночи.
+How are you?|Как дела?
+I'm fine, thank you.|У меня всё хорошо, спасибо.
+Nice to meet you.|Приятно познакомиться.
+Pleased to meet you.|Рад познакомиться.
+How is it going?|Как дела? (неформально)
+Welcome!|Добро пожаловать!
+You're welcome.|Пожалуйста (в ответ на благодарность).
+Thank you very much.|Большое спасибо.
+Thanks a lot.|Большое спасибо.
+You're very kind.|Вы очень добры.
+Please.|Пожалуйста.
+Excuse me.|Извините (чтобы обратиться).
+I'm sorry.|Мне жаль; извините.
+No problem.|Без проблем.
+That's all right.|Всё в порядке.
+See you later.|Увидимся позже.
+See you soon.|До скорой встречи.
+Have a nice day.|Хорошего дня.
+Take care.|Береги себя.
+Goodbye for now.|Пока; до свидания.`);
+add("phrases","Повседневное общение",`I don't understand.|Я не понимаю.
+Could you repeat that?|Не могли бы вы повторить?
+Please speak more slowly.|Пожалуйста, говорите медленнее.
+What does it mean?|Что это значит?
+How do you say this in English?|Как это сказать по-английски?
+How do you spell it?|Как это пишется по буквам?
+I have a question.|У меня есть вопрос.
+Can you help me?|Вы можете мне помочь?
+Could you help me, please?|Не могли бы вы мне помочь?
+I think so.|Я так думаю.
+I don't think so.|Я так не думаю.
+I agree with you.|Я с вами согласен.
+I don't agree.|Я не согласен.
+It depends.|Это зависит от обстоятельств.
+That sounds good.|Звучит хорошо.
+That's a good idea.|Это хорошая идея.
+I'm not sure.|Я не уверен.
+Of course.|Конечно.
+Maybe later.|Может быть, позже.
+Just a moment.|Одну минуту.
+Wait a minute.|Подожди минуту.
+Let me think.|Дай мне подумать.
+I see.|Понятно.
+I mean...|Я имею в виду...
+By the way...|Кстати...
+For example...|Например...`);
+add("phrases","Покупки и кафе",`How much does it cost?|Сколько это стоит?
+Can I pay by card?|Можно оплатить картой?
+Can I pay in cash?|Можно оплатить наличными?
+I'm just looking.|Я просто смотрю.
+Do you have this in another size?|Есть это другого размера?
+Do you have this in blue?|Есть это синего цвета?
+I'd like this one.|Я бы хотел вот это.
+Can I try it on?|Можно примерить?
+Where is the fitting room?|Где примерочная?
+Could I see the menu?|Можно посмотреть меню?
+I'd like a coffee, please.|Мне, пожалуйста, кофе.
+Can I have some water?|Можно мне воды?
+I'm ready to order.|Я готов сделать заказ.
+Could we have the bill?|Можно нам счёт?
+Keep the change.|Сдачи не надо.
+It's too expensive.|Это слишком дорого.
+That's a good price.|Это хорошая цена.
+I'm looking for...|Я ищу...
+Do you accept cash?|Вы принимаете наличные?
+Where can I buy this?|Где можно это купить?`);
+add("phrases","Дорога и поездки",`Where is the bus stop?|Где автобусная остановка?
+How can I get there?|Как мне туда добраться?
+Is it far from here?|Это далеко отсюда?
+Go straight ahead.|Идите прямо.
+Turn left at the corner.|Поверните налево на углу.
+Turn right here.|Поверните здесь направо.
+I'm looking for this address.|Я ищу этот адрес.
+I need a taxi.|Мне нужно такси.
+What time does the train leave?|Во сколько отправляется поезд?
+Where is the station?|Где вокзал?
+I'd like a ticket to London.|Я бы хотел билет до Лондона.
+Is this seat free?|Это место свободно?
+I have a reservation.|У меня есть бронь.
+Where is the nearest hotel?|Где ближайший отель?
+I've lost my bag.|Я потерял сумку.
+Can you show me on the map?|Можете показать на карте?
+How long does it take?|Сколько времени это занимает?
+I am here on holiday.|Я здесь в отпуске.
+I need some information.|Мне нужна информация.
+Could you call a taxi?|Не могли бы вы вызвать такси?`);
+add("phrases","Работа и планы",`What do you do?|Кем вы работаете?
+I work from home.|Я работаю из дома.
+I'm looking for a job.|Я ищу работу.
+I have a meeting.|У меня встреча.
+Let's make a plan.|Давай составим план.
+I'll think about it.|Я подумаю об этом.
+I'll get back to you.|Я свяжусь с вами позже.
+Could you send me an email?|Можете отправить мне письмо?
+Please let me know.|Пожалуйста, сообщите мне.
+I'm available tomorrow.|Я свободен завтра.
+I'm busy at the moment.|Я сейчас занят.
+What time works for you?|Какое время вам подходит?
+That works for me.|Мне подходит.
+Let's meet at six.|Давай встретимся в шесть.
+I'm running late.|Я опаздываю.
+I'll be there soon.|Я скоро буду.
+Thank you for your time.|Спасибо за ваше время.
+I appreciate your help.|Я ценю вашу помощь.
+Let's talk about it.|Давай поговорим об этом.
+Have a great weekend.|Хороших выходных.`);
+add("sentences","Знакомство и семья",`My name is Alex.|Меня зовут Алекс.
+I am from Russia.|Я из России.
+I live in a small city.|Я живу в небольшом городе.
+I am learning English.|Я изучаю английский.
+I speak a little English.|Я немного говорю по-английски.
+I don't speak English very well yet.|Я пока не очень хорошо говорю по-английски.
+This is my family.|Это моя семья.
+I have one child.|У меня один ребёнок.
+My parents live nearby.|Мои родители живут неподалёку.
+We often have dinner together.|Мы часто ужинаем вместе.
+My friend works in a hospital.|Мой друг работает в больнице.
+What is your name?|Как тебя зовут?
+Where are you from?|Откуда ты?
+Do you have any brothers or sisters?|У тебя есть братья или сёстры?
+How old is your child?|Сколько лет твоему ребёнку?`);
+add("sentences","Повседневные ситуации",`I usually get up at seven.|Обычно я встаю в семь.
+I have breakfast before work.|Я завтракаю перед работой.
+I go to work by bus.|Я езжу на работу на автобусе.
+I come home at six.|Я прихожу домой в шесть.
+I need to buy some food.|Мне нужно купить немного еды.
+There is a shop near my house.|Рядом с моим домом есть магазин.
+The weather is cold today.|Сегодня холодная погода.
+It is raining outside.|На улице идёт дождь.
+I can't find my keys.|Я не могу найти ключи.
+My phone battery is low.|У моего телефона мало заряда.
+Could you open the window?|Не могли бы вы открыть окно?
+Please turn off the light.|Пожалуйста, выключи свет.
+I am tired, so I want to rest.|Я устал, поэтому хочу отдохнуть.
+We are going to cook dinner.|Мы собираемся приготовить ужин.
+What would you like to drink?|Что ты хочешь выпить?`);
+add("sentences","Вопросы и ответы",`Where do you live?|Где ты живёшь?
+What time do you start work?|Во сколько ты начинаешь работу?
+How do you usually travel to work?|Как ты обычно добираешься на работу?
+Why are you learning English?|Почему ты изучаешь английский?
+Can you help me with this task?|Ты можешь помочь мне с этой задачей?
+Could you tell me the time?|Не могли бы вы сказать, который час?
+How much does this ticket cost?|Сколько стоит этот билет?
+Where can I find a pharmacy?|Где я могу найти аптеку?
+Would you like some tea?|Хочешь чаю?
+What are you doing now?|Что ты сейчас делаешь?
+I don't know the answer.|Я не знаю ответа.
+I will call you tomorrow.|Я позвоню тебе завтра.
+Can we meet next week?|Мы можем встретиться на следующей неделе?
+I have never been there before.|Я никогда раньше там не был.
+Could you write it down for me?|Не могли бы вы записать это для меня?`);
+add("sentences","Работа и обучение",`I work five days a week.|Я работаю пять дней в неделю.
+I have a lot of things to do today.|Сегодня мне нужно многое сделать.
+The meeting starts in ten minutes.|Встреча начинается через десять минут.
+Please send me the file by email.|Пожалуйста, отправьте мне файл по электронной почте.
+I will finish this task before lunch.|Я закончу эту задачу до обеда.
+I need more time to think about it.|Мне нужно больше времени, чтобы подумать об этом.
+Could you explain this rule again?|Не могли бы вы ещё раз объяснить это правило?
+I make mistakes when I speak quickly.|Я делаю ошибки, когда говорю быстро.
+Practice helps me remember new words.|Практика помогает мне запоминать новые слова.
+I try to learn a few words every day.|Я стараюсь учить несколько слов каждый день.
+English is useful for my work.|Английский полезен для моей работы.
+I understand more than I can say.|Я понимаю больше, чем могу сказать.
+Let's check the information first.|Давайте сначала проверим информацию.
+If you have questions, please ask me.|Если у вас есть вопросы, пожалуйста, задавайте.
+I will let you know when I am ready.|Я сообщу вам, когда буду готов.`);
+add("sentences","Планы и мнения",`I would like to travel more often.|Я хотел бы путешествовать чаще.
+We are planning a short trip.|Мы планируем короткую поездку.
+I think this is a good idea.|Я думаю, это хорошая идея.
+In my opinion, this is important.|По моему мнению, это важно.
+I agree because the price is fair.|Я согласен, потому что цена справедливая.
+I am not sure what to do next.|Я не уверен, что делать дальше.
+If the weather is good, we will go outside.|Если погода будет хорошей, мы выйдем на улицу.
+I will call you when I arrive.|Я позвоню тебе, когда приеду.
+Although it is difficult, I will try.|Хотя это трудно, я попробую.
+I have to leave early tomorrow.|Мне нужно уйти рано завтра.
+There are many things I want to learn.|Есть много вещей, которым я хочу научиться.
+The best way to learn is to practise.|Лучший способ учиться — практиковаться.
+I need to save money for a new phone.|Мне нужно накопить деньги на новый телефон.
+We can solve this problem together.|Мы можем решить эту проблему вместе.
+Thank you for explaining everything.|Спасибо, что всё объяснили.`);
 
-let data={learned:[],score:0};
-try{
- const saved=localStorage.getItem("englishDailyProgressV2");
- if(saved){
-  const parsed=JSON.parse(saved);
-  if(Array.isArray(parsed.learned)&&Number.isFinite(parsed.score))data=parsed;
- }
-}catch(e){}
-
-let wi=0,qi=0,correct=0,answered=false,currentAudio=null;
-let audioRun=0;
-
-function saveData(){
- try{localStorage.setItem("englishDailyProgressV2",JSON.stringify(data));}catch(e){}
- updateStats();
-}
-
-function showTab(tab){
- document.querySelectorAll("main section").forEach(s=>s.classList.add("hidden"));
- const section=document.getElementById("tab-"+tab);
- if(section)section.classList.remove("hidden");
- document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
- const navButton=document.getElementById("nav-"+tab);
- if(navButton)navButton.classList.add("active");
- if(tab==="list")renderAllWords();
- if(tab==="words")renderWord();
- if(tab==="quiz"&&!document.getElementById("quizWord").textContent)renderQuiz();
- window.scrollTo(0,0);
-}
-
-function renderWord(){
- const w=words[wi];
- document.getElementById("wordCounter").textContent="Слово "+(wi+1)+" из "+words.length;
- document.getElementById("wordProgress").style.width=((wi+1)/words.length*100)+"%";
- document.getElementById("englishWord").textContent=w.en;
- document.getElementById("russianWord").textContent=w.ru;
- document.getElementById("wordExample").textContent="“"+w.ex+"”";
- document.getElementById("audioStatus").textContent="";
-}
-
-function nextWord(){
- stopAudio();
- wi=(wi+1)%words.length;
- renderWord();
-}
-
-function markLearned(){
- const en=words[wi].en;
- if(!data.learned.includes(en))data.learned.push(en);
- saveData();
- document.getElementById("audioStatus").textContent="✅ Слово отмечено как изученное.";
-}
-
-function renderAllWords(){
- const box=document.getElementById("allWords");
- box.innerHTML="";
- words.forEach(w=>{
-  const row=document.createElement("div");
-  row.className="wordrow";
-  const info=document.createElement("div");
-  const en=document.createElement("strong");
-  en.textContent=w.en;
-  const ru=document.createElement("div");
-  ru.className="small";
-  ru.textContent=w.ru+(data.learned.includes(w.en)?" ✓":"");
-  info.append(en,ru);
-  const btn=document.createElement("button");
-  btn.className="mini";
-  btn.textContent="🔊";
-  btn.setAttribute("aria-label","Слушать "+w.en);
-  btn.onclick=()=>playPronunciation(w.en,"listAudioStatus");
-  row.append(info,btn);
-  box.append(row);
- });
- const status=document.createElement("div");
- status.id="listAudioStatus";
- status.className="status";
- box.append(status);
-}
-
-function stopAudio(){
- audioRun++;
- if(currentAudio){
-  try{
-   currentAudio.pause();
-   currentAudio.removeAttribute("src");
-   currentAudio.load();
-  }catch(e){}
-  currentAudio=null;
- }
- try{
-  if("speechSynthesis" in window)window.speechSynthesis.cancel();
- }catch(e){}
-}
-
-function playPronunciation(text,statusId="audioStatus"){
- const status=document.getElementById(statusId);
- if(!status)return;
- stopAudio();
- const myRun=audioRun;
- status.textContent="Запускаю системное произношение…";
-
- // Android WebView has no Telegram-specific audio API. Start Android/browser TTS
- // directly inside the tap handler so it retains the user's interaction.
- let fallbackStarted=false;
- let finished=false;
- let fallbackTimer=null;
-
- function startFallback(reason){
-  if(fallbackStarted||myRun!==audioRun)return;
-  fallbackStarted=true;
-  if(fallbackTimer)clearTimeout(fallbackTimer);
-  try{if("speechSynthesis" in window)window.speechSynthesis.cancel();}catch(e){}
-  status.textContent=reason||"Системная озвучка недоступна. Пробую аудиофайл…";
-  playRemotePronunciation(text,status,myRun);
- }
-
- if("speechSynthesis" in window&&typeof SpeechSynthesisUtterance!=="undefined"){
-  try{
-   const speech=new SpeechSynthesisUtterance(text);
-   speech.lang="en-US";
-   speech.rate=0.88;
-   speech.onstart=()=>{
-    if(myRun!==audioRun||fallbackStarted)return;
-    finished=true;
-    if(fallbackTimer)clearTimeout(fallbackTimer);
-    status.textContent="🔊 Системное произношение воспроизводится…";
-   };
-   speech.onend=()=>{
-    if(myRun===audioRun&&!fallbackStarted){
-     finished=true;
-     if(fallbackTimer)clearTimeout(fallbackTimer);
-     status.textContent="✅ Озвучивание завершено.";
-    }
-   };
-   speech.onerror=()=>startFallback("Системная озвучка не запустилась. Пробую аудиофайл…");
-   // The speak() call itself is made synchronously during the button tap.
-   window.speechSynthesis.speak(speech);
-   fallbackTimer=setTimeout(()=>{
-    if(!finished)startFallback("Android TTS не начал воспроизведение. Пробую аудиофайл…");
-   },1800);
-   return;
-  }catch(e){}
- }
- startFallback("Системная озвучка недоступна. Пробую аудиофайл…");
-}
-
-async function playRemotePronunciation(text,status,myRun){
- const sources=[
-  "https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=en-US&q=",
-  "https://translate.google.co.uk/translate_tts?ie=UTF-8&client=tw-ob&tl=en&q=",
-  "https://translate.google.de/translate_tts?ie=UTF-8&client=tw-ob&tl=en&q="
- ];
- for(const source of sources){
-  if(myRun!==audioRun)return;
-  if(await tryAudio(source+encodeURIComponent(text),status,3500,myRun))return;
- }
- if(myRun!==audioRun)return;
- status.textContent="Ищу произношение в словаре…";
- try{
-  const controller=new AbortController();
-  const timeout=setTimeout(()=>controller.abort(),3500);
-  let response;
-  try{
-   response=await fetch("https://api.dictionaryapi.dev/api/v2/entries/en/"+encodeURIComponent(text),{signal:controller.signal,cache:"no-store"});
-  }finally{clearTimeout(timeout);}
-  if(response.ok){
-   const entries=await response.json();
-   for(const entry of entries){
-    for(const phonetic of entry.phonetics||[]){
-     if(!phonetic.audio)continue;
-     let url=phonetic.audio;
-     if(url.startsWith("//"))url="https:"+url;
-     if(myRun!==audioRun)return;
-     if(await tryAudio(url,status,4000,myRun))return;
-    }
-   }
-  }
- }catch(e){}
- if(myRun===audioRun)status.textContent="Звук не запустился ни через Android TTS, ни через аудиосервисы. Это указывает на ограничение WebView/системного звука или сетевой доступ; повторные смены URL не помогут. Нужна диагностика WebView на Android.";
-}
-
-function tryAudio(url,status,timeoutMs=4000,myRun=audioRun){
- return new Promise(resolve=>{
-  let finished=false;
-  const audio=new Audio();
-  currentAudio=audio;
-  audio.preload="auto";
-
-  const timer=setTimeout(()=>finish(false),timeoutMs);
-
-  function finish(success){
-   if(finished)return;
-   finished=true;
-   clearTimeout(timer);
-   audio.onplaying=null;
-   audio.onended=null;
-   audio.onerror=null;
-
-   if(myRun!==audioRun)success=false;
-
-   if(!success){
-    try{audio.pause();audio.removeAttribute("src");audio.load();}catch(e){}
-   }else{
-    status.textContent="Воспроизведение завершено.";
-   }
-   resolve(success);
-  }
-
-  audio.onplaying=()=>{
-   if(myRun===audioRun)status.textContent="🔊 Воспроизведение…";
-  };
-  audio.onended=()=>finish(true);
-  audio.onerror=()=>finish(false);
-  audio.src=url;
-
-  try{
-   const result=audio.play();
-   if(result&&typeof result.catch==="function")result.catch(()=>finish(false));
-  }catch(e){finish(false);}
- });
-}
-
-function playWord(){
- playPronunciation(words[wi].en);
-}
-
-function renderQuiz(){
- qi=Math.floor(Math.random()*words.length);
- answered=false;
- const w=words[qi];
- document.getElementById("quizWord").textContent=w.en;
- document.getElementById("feedback").textContent="";
- document.getElementById("nextQuiz").classList.add("hidden");
- const options=[w];
- while(options.length<4){
-  const candidate=words[Math.floor(Math.random()*words.length)];
-  if(!options.some(o=>o.en===candidate.en))options.push(candidate);
- }
- options.sort(()=>Math.random()-.5);
- const box=document.getElementById("quizOptions");
- box.innerHTML="";
- options.forEach(option=>{
-  const btn=document.createElement("button");
-  btn.className="option";
-  btn.textContent=option.ru;
-  btn.onclick=()=>checkAnswer(option.en===w.en,btn,w.ru);
-  box.append(btn);
- });
- document.getElementById("quizScore").textContent="Правильных ответов за этот запуск: "+correct;
-}
-
-function checkAnswer(isCorrect,button,translation){
- if(answered)return;
- answered=true;
- const feedback=document.getElementById("feedback");
- if(isCorrect){
-  correct++;
-  data.score++;
-  feedback.textContent="✅ Верно!";
-  button.style.background="#176b50";
-  saveData();
- }else{
-  feedback.textContent="❌ Правильный ответ: "+translation;
-  button.style.background="#8c3542";
- }
- document.getElementById("nextQuiz").classList.remove("hidden");
- document.querySelectorAll("#quizOptions button").forEach(b=>b.disabled=true);
- document.getElementById("quizScore").textContent="Правильных ответов за этот запуск: "+correct;
-}
-
-function nextQuestion(){renderQuiz();}
-
-function updateStats(){
- const learned=data.learned.length;
- document.getElementById("homeLearned").textContent=learned+" из "+words.length;
- document.getElementById("homeProgress").style.width=Math.min(100,learned/words.length*100)+"%";
- document.getElementById("profileLearned").textContent=learned;
- document.getElementById("profileScore").textContent=data.score;
-}
-
-function resetProgress(){
- if(confirm("Сбросить весь сохранённый прогресс?")){
-  data={learned:[],score:0};
-  saveData();
-  showTab("profile");
- }
-}
-
-try{
- if(window.Telegram&&window.Telegram.WebApp){
-  window.Telegram.WebApp.ready();
-  window.Telegram.WebApp.expand();
- }
-}catch(e){}
-
+let data={learned:[],score:0};try{const saved=localStorage.getItem("englishDailyProgressV2");if(saved){const parsed=JSON.parse(saved);if(Array.isArray(parsed.learned)&&Number.isFinite(parsed.score))data=parsed}}catch(e){}
+try{const old=localStorage.getItem("englishDailyProgressV2");if(old){const parsed=JSON.parse(old);if(Array.isArray(parsed.learned))data.learned=parsed.learned}}catch(e){}
+let currentModule="words",itemIndex=0,quizCorrect=0,answered=false;
+function moduleItems(module){return items.filter(x=>x.module===module)}
+function openModule(module){currentModule=module;itemIndex=0;showTab("study");renderStudy()}
+function showTab(tab){document.querySelectorAll("main section").forEach(s=>s.classList.add("hidden"));const section=document.getElementById("tab-"+tab);if(section)section.classList.remove("hidden");document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));const btn=document.getElementById("nav-"+tab);if(btn)btn.classList.add("active");if(tab==="library")renderLibrary();if(tab==="quiz"&&!document.getElementById("quizEn").textContent)renderQuiz();window.scrollTo(0,0)}
+function renderStudy(){let list=moduleItems(currentModule);if(!list.length)return;itemIndex=(itemIndex+list.length)%list.length;const x=list[itemIndex];document.getElementById("moduleTitle").textContent=moduleNames[currentModule];document.getElementById("moduleCounter").textContent=(itemIndex+1)+" из "+list.length+" · "+x.category;document.getElementById("moduleProgress").style.width=((itemIndex+1)/list.length*100)+"%";document.getElementById("studyEn").textContent=x.en;document.getElementById("studyRu").textContent=x.ru;document.getElementById("studyEx").textContent=x.ex||""}
+function nextItem(){itemIndex++;renderStudy()}function previousItem(){itemIndex--;renderStudy()}
+function markLearned(){const list=moduleItems(currentModule);const x=list[itemIndex];if(x&&!data.learned.includes(x.id))data.learned.push(x.id);saveData();document.getElementById("moduleCounter").textContent="✓ Отмечено как изученное · "+(itemIndex+1)+" из "+list.length+" · "+x.category}
+function saveData(){try{localStorage.setItem("englishDailyProgressV2",JSON.stringify(data))}catch(e){}updateStats()}
+function updateStats(){const n=data.learned.length;document.getElementById("homeLearned").textContent=n+" / "+items.length;document.getElementById("homeProgress").style.width=Math.min(100,n/items.length*100)+"%";document.getElementById("profileLearned").textContent=n;document.getElementById("profileScore").textContent=data.score}
+function renderLibrary(){const moduleFilter=currentModule;const q=(document.getElementById("searchItems").value||"").trim().toLowerCase();const cat=document.getElementById("categoryFilter").value;const type=document.getElementById("typeFilter").value;const list=items.filter(x=>(x.module===moduleFilter)&&(!q||(x.en+" "+x.ru+" "+x.ex).toLowerCase().includes(q))&&(cat==="all"||x.category===cat)&&(type==="all"||(type==="learned"?data.learned.includes(x.id):!data.learned.includes(x.id))));document.getElementById("libraryTitle").textContent="Справочник: "+moduleNames[moduleFilter];document.getElementById("libraryCount").textContent="Найдено: "+list.length+" элементов";const box=document.getElementById("libraryItems");box.innerHTML="";list.forEach(x=>{const row=document.createElement("div");row.className="wordrow";const info=document.createElement("div");const en=document.createElement("strong");en.textContent=x.en;const ru=document.createElement("div");ru.className="small";ru.textContent=x.ru+(data.learned.includes(x.id)?" ✓":"");info.append(en,ru);const btn=document.createElement("button");btn.className="mini";btn.textContent="Учить";btn.onclick=()=>{currentModule=x.module;itemIndex=moduleItems(x.module).findIndex(a=>a.id===x.id);showTab("study");renderStudy()};row.append(info,btn);box.append(row)})}
+function openLibrary(module){currentModule=module;const select=document.getElementById("categoryFilter");select.innerHTML='<option value="all">Все темы</option>';[...new Set(moduleItems(module).map(x=>x.category))].forEach(cat=>{const o=document.createElement("option");o.value=cat;o.textContent=cat;select.append(o)});document.getElementById("searchItems").value="";document.getElementById("typeFilter").value="all";showTab("library");renderLibrary()}
+function renderQuiz(){const module=document.getElementById("quizModule").value;let list=items.filter(x=>module==="all"||x.module===module);if(list.length<4){document.getElementById("quizEn").textContent="Недостаточно элементов";return}const q=list[Math.floor(Math.random()*list.length)];answered=false;document.getElementById("quizEn").textContent=q.en;document.getElementById("quizFeedback").textContent="";document.getElementById("nextQuiz").classList.add("hidden");const choices=[q];while(choices.length<4){const candidate=list[Math.floor(Math.random()*list.length)];if(!choices.some(x=>x.id===candidate.id))choices.push(candidate)}choices.sort(()=>Math.random()-.5);const box=document.getElementById("quizOptions");box.innerHTML="";choices.forEach(x=>{const b=document.createElement("button");b.className="option";b.textContent=x.ru;b.onclick=()=>checkAnswer(x.id===q.id,b,q.ru);box.append(b)});document.getElementById("quizScore").textContent="Правильных ответов за эту сессию: "+quizCorrect}
+function checkAnswer(ok,button,answer){if(answered)return;answered=true;const feedback=document.getElementById("quizFeedback");if(ok){quizCorrect++;data.score++;feedback.textContent="✅ Верно!";button.style.background="#176b50";saveData()}else{feedback.textContent="❌ Правильный ответ: "+answer;button.style.background="#8c3542"}document.querySelectorAll("#quizOptions button").forEach(b=>b.disabled=true);document.getElementById("nextQuiz").classList.remove("hidden");document.getElementById("quizScore").textContent="Правильных ответов за эту сессию: "+quizCorrect}
+function resetProgress(){if(confirm("Сбросить весь сохранённый прогресс?")){data={learned:[],score:0};saveData();showTab("profile")}}
+document.querySelectorAll(".tile").forEach(btn=>{btn.addEventListener("click",()=>{})});
+document.getElementById("nav-study").onclick=()=>openModule("words");
+document.getElementById("nav-library").onclick=()=>openLibrary(currentModule);
+document.querySelectorAll("#tab-home .tile").forEach(btn=>{btn.addEventListener("click",()=>{})});
+/* Keep legacy progress where possible; old records stored English words, new IDs are preserved as well. */
+const legacyWords=new Set(["hello","house","water","food","friend","work","learn","book","family","time","good","today","tomorrow","beautiful","help","money","travel","happy","understand","important"]);
+data.learned=data.learned.map(x=>{if(legacyWords.has(x)){const found=items.find(i=>i.en===x);return found?found.id:x}return x});
 updateStats();
-renderWord();
-renderQuiz();
 </script>
-</body>
-</html>
+</body></html>
