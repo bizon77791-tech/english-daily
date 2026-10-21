@@ -12,17 +12,14 @@
 </style>
 </head>
 <body>
-<header><h1>✨ Фото ИИ</h1><p>Загрузи фото, опиши изменения и получи результат</p></header>
+<header><h1>📷 Фото без ключей</h1><p>Редактирование на телефоне — без аккаунта и отправки фото в сеть</p></header>
 <main>
 <section class="card">
 <h2>1. Исходная фотография</h2>
 <label class="upload" for="photoInput"><span>📷 Выбрать фото на устройстве</span><input id="photoInput" type="file" accept="image/jpeg,image/png,image/webp" aria-label="Выбрать фотографию"></label>
 <img id="originalPreview" class="preview hidden" alt="Исходное фото">
 <div id="fileInfo" class="small"></div>
-<div class="notice">Добавлены два варианта ИИ-обработки: OpenAI GPT Image (нужен платный API-баланс) и Pollinations Kontext (доступность и бесплатные лимиты зависят от аккаунта). Ключ вводится только на этой странице и не сохраняется приложением. Фото отправляется выбранному провайдеру. Не публикуй ключ и не используй чужие устройства.</div>
-<label class="small" for="provider">Провайдер ИИ</label><select id="provider" class="field"><option value="pollinations" selected>Pollinations — попробовать бесплатный лимит</option><option value="openai">OpenAI GPT Image 2.5 — платный API</option><option value="local">Без ИИ — локальные улучшения фото</option></select>
-<label class="small" for="apiKey">API-ключ выбранного провайдера</label><input id="apiKey" class="field" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Ключ Pollinations или OpenAI">
-<p id="keyHelp" class="small">Ключ Pollinations можно получить на <a href="https://enter.pollinations.ai/" target="_blank" rel="noopener">enter.pollinations.ai</a>. Используй только собственный ключ; бесплатные лимиты и доступность могут меняться.</p>
+<div class="notice"><strong>Работает без регистрации, ключей и оплаты.</strong> Фото обрабатывается прямо на телефоне, никуда не отправляется. Доступны улучшение света и цвета, чёрно-белый эффект и сепия. Это редактор с фильтрами, не генеративный ИИ: он не умеет достоверно заменить фон или добавить новые объекты.</div>
 </section>
 <section class="card">
 <h2>2. Что изменить на фото?</h2>
@@ -41,7 +38,7 @@
 <select id="size" class="field"><option value="auto" selected>Автоматически по фото</option><option value="1024x1024">1024 × 1024</option></select>
 </label>
 </div>
-<button id="editBtn" class="btn primary" type="button">✨ Обработать фото с ИИ</button>
+<button id="editBtn" class="btn primary" type="button">✨ Обработать фото</button>
 <div id="status" class="status" role="status" aria-live="polite"></div>
 </section>
 <section id="resultCard" class="card hidden">
@@ -53,9 +50,8 @@
 <p class="foot">На Android сохранение может открыться как загрузка браузера. Если Telegram не сохраняет файл напрямую, открой изображение отдельно и выбери «Скачать» или «Сохранить изображение».</p>
 </section>
 <section class="card">
-<h2>Как добиться точного результата</h2>
-<p class="small">Пиши конкретно: что изменить и что строго оставить без изменений. Например: «Замени только фон на белый. Сам товар, его форма, цвет, логотип, пропорции и ракурс должны остаться неизменными. Не добавляй предметы и текст».</p>
-<p class="small">Это приложение использует модель редактирования GPT Image, а не свободную модель перерисовки. Но генеративное редактирование всё равно не гарантирует сохранение каждого пикселя. Для защиты важных деталей лучше формулировать запрос на локальное изменение и использовать маску (поддержка маски пока не добавлена).</p>
+<h2>Что понимает поле инструкции</h2>
+<p class="small">Напиши «сделай ярче», «увеличь контраст», «насыщенные цвета», «чёрно-белое фото» или «сепия». Редактор применит соответствующий фильтр. Произвольные изменения сцены, удаление предметов и замену фона этот режим не выполняет.</p>
 </section>
 </main>
 <script>
@@ -64,8 +60,6 @@
   if(tg){try{tg.ready();tg.expand();}catch(e){}}
   const input=document.getElementById('photoInput'), original=document.getElementById('originalPreview');
   const promptEl=document.getElementById('promptInput'), editBtn=document.getElementById('editBtn');
-  const providerEl=document.getElementById('provider'), keyEl=document.getElementById('apiKey'), keyHelp=document.getElementById('keyHelp');
-  providerEl.addEventListener('change',()=>{const p=providerEl.value;keyEl.classList.toggle('hidden',p==='local');keyHelp.classList.toggle('hidden',p==='local');if(p==='openai'){keyEl.placeholder='sk-…';keyHelp.innerHTML='Создать ключ: <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">OpenAI API keys</a>. Нужен активный API-баланс.'}else if(p==='pollinations'){keyEl.placeholder='Ключ Pollinations';keyHelp.innerHTML='Ключ Pollinations: <a href="https://enter.pollinations.ai/" target="_blank" rel="noopener">enter.pollinations.ai</a>. Лимиты и доступность могут меняться.'}});
   const statusEl=document.getElementById('status'), resultCard=document.getElementById('resultCard');
   const resultPreview=document.getElementById('resultPreview'), resultInfo=document.getElementById('resultInfo');
   let sourceFile=null, resultUrl=null, busy=false;
@@ -87,51 +81,13 @@
     if(!sourceFile){setStatus('Сначала выбери фотографию.','error');return}
     const prompt=promptEl.value.trim();
     if(!prompt){setStatus('Напиши, что нужно изменить на фото.','error');promptEl.focus();return}
-    const provider=providerEl.value;
-    const apiKey=keyEl.value.trim();
-    if(provider!=='local'&&!apiKey){setStatus('Для ИИ-обработки нужен ключ выбранного провайдера. Можно выбрать «Без ИИ» для локальных улучшений без ключа.','error');keyEl.focus();return}
-    if(provider==='openai'&&!/^sk-/.test(apiKey)){setStatus('Похоже, это не OpenAI API-ключ.','error');return}
     busy=true;editBtn.disabled=true;editBtn.textContent='⏳ Обрабатываем…';resultCard.classList.add('hidden');
     try{
-      if(provider==='local'){
-        setStatus('Улучшаем изображение прямо на устройстве…');
-        const edited=await localEnhance(sourceFile,prompt);
-        resultUrl=edited;resultPreview.src=resultUrl;resultCard.classList.remove('hidden');
-        resultInfo.textContent='Локальная обработка в браузере. Внешний ИИ не использовался, фото не отправлялось на сервер.';
-        setStatus('Готово.','ok');resultCard.scrollIntoView({behavior:'smooth',block:'start'});return;
-      }
-      setStatus('Отправляем фото выбранному ИИ-провайдеру…');
-      const form=new FormData();
-      let endpoint, model;
-      if(provider==='openai'){
-        endpoint='https://api.openai.com/v1/images/edits';model='gpt-image-2.5-sunburst';
-        form.append('model',model);form.append('image[]',sourceFile,sourceFile.name);
-        form.append('quality',document.getElementById('quality').value);
-        form.append('size',document.getElementById('size').value);
-        form.append('output_format','png');
-      }else{
-        endpoint='https://gen.pollinations.ai/v1/images/edits';model='kontext';
-        form.append('model',model);form.append('image',sourceFile,sourceFile.name);
-        form.append('size',document.getElementById('size').value==='auto'?'1024x1024':document.getElementById('size').value);
-      }
-      form.append('prompt',prompt+' Preserve all parts of the original image that are not explicitly requested to change. Do not add unrequested objects, text, logos, or watermarks. Follow the edit instructions literally.');
-      setStatus('ИИ редактирует изображение… Не закрывай приложение.');
-      const response=await fetch(endpoint,{method:'POST',headers:{'Authorization':'Bearer '+apiKey},body:form});
-      let data;try{data=await response.json()}catch(e){throw new Error('Провайдер вернул ответ, который не удалось прочитать.')}
-      if(!response.ok){
-        const err=data&&data.error;const detail=typeof err==='string'?err:(err&&err.message?err.message:'HTTP '+response.status);
-        if(response.status===401)throw new Error('Провайдер не принял ключ. Проверь ключ и права доступа.');
-        if(response.status===429)throw new Error('Лимит запросов исчерпан. Подожди или проверь лимиты выбранного провайдера.');
-        throw new Error(detail);
-      }
-      const encoded=data&&data.data&&data.data[0]&&data.data[0].b64_json;
-      const imageUrl=data&&data.data&&data.data[0]&&data.data[0].url;
-      if(encoded)resultUrl='data:image/png;base64,'+encoded;
-      else if(imageUrl){const imgResp=await fetch(imageUrl);if(!imgResp.ok)throw new Error('Не удалось скачать результат от провайдера.');resultUrl=URL.createObjectURL(await imgResp.blob())}
-      else throw new Error('Провайдер не вернул готовое изображение.');
+      setStatus('Обрабатываем фото прямо на телефоне…');
+      resultUrl=await localEnhance(sourceFile,prompt);
       resultPreview.src=resultUrl;resultCard.classList.remove('hidden');
-      resultInfo.textContent='Готово: '+(provider==='openai'?'OpenAI GPT Image 2.5':'Pollinations Kontext')+'. Проверь результат.';
-      setStatus('Изображение обработано.','ok');resultCard.scrollIntoView({behavior:'smooth',block:'start'});
+      resultInfo.textContent='Готово. Локальная обработка: фото не отправлялось в интернет.';
+      setStatus('Фото обработано.','ok');resultCard.scrollIntoView({behavior:'smooth',block:'start'});
     }catch(err){
       const msg=err&&err.message?err.message:String(err);
       if(/Failed to fetch|NetworkError|Load failed/i.test(msg)){
@@ -139,16 +95,16 @@
       }else{
         setStatus('Не удалось отредактировать фото: '+msg,'error');
       }
-    }finally{busy=false;editBtn.disabled=false;editBtn.textContent='✨ Обработать фото с ИИ'}
+    }finally{busy=false;editBtn.disabled=false;editBtn.textContent='✨ Обработать фото'}
   });
   async function localEnhance(file,prompt){
     const image=await new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>reject(new Error('Не удалось открыть исходное фото.'));img.src=URL.createObjectURL(file)});
     const canvas=document.createElement('canvas');canvas.width=image.naturalWidth;canvas.height=image.naturalHeight;
     const ctx=canvas.getContext('2d');const p=prompt.toLowerCase();
     let brightness=1.08,contrast=1.08,saturate=1.08,sepia=0,grayscale=0;
-    if(/чёрно-бел|черно-бел|black and white|grayscale/.test(p)){grayscale=1;saturate=0}
-    if(/сепия|sepia|винтаж|vintage/.test(p)){sepia=.65;saturate=.8}
-    if(/ярк|свет|bright|lighting/.test(p)){brightness=1.18}
+    if(/чёрно-бел|черно-бел|black and white|grayscale|монохром/.test(p)){grayscale=1;saturate=0;brightness=1;contrast=1.08}
+    if(/сепия|sepia|винтаж|vintage/.test(p)){sepia=.65;saturate=.8;brightness=1.04;contrast=1.05}
+    if(/ярк|свет|bright|lighting|освет/.test(p)){brightness=1.18}
     if(/контраст|contrast/.test(p)){contrast=1.2}
     if(/насыщ|цвет|color|colour/.test(p)){saturate=1.25}
     ctx.filter='brightness('+brightness+') contrast('+contrast+') saturate('+saturate+') sepia('+sepia+') grayscale('+grayscale+')';
