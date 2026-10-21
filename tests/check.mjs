@@ -25,7 +25,7 @@ for (const id of [
 
 assert.match(html, /https:\/\/api\.openai\.com\/v1\/images\/edits/,
   "official OpenAI image editing endpoint should be connected");
-assert.match(html, /model\x27,\x27gpt-image-2\.5-sunburst/, "GPT Image 2.5 editing model should be selected");
+assert.match(html, /model='gpt-image-2\.5-sunburst'/, "OpenAI GPT Image 2.5 editing model should be selected");
 assert.match(html, /image\[\]/, "the original image should be sent as multipart image input");
 assert.match(html, /apiKey/, "user must be able to enter an API key without embedding it in source code");
 assert.doesNotMatch(html, /aihorde\.net|0000000000|source_processing:\s*'img2img'/,
