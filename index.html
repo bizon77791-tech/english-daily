@@ -50,8 +50,8 @@
 <p class="foot">На Android сохранение может открыться как загрузка браузера. Если Telegram не сохраняет файл напрямую, открой изображение отдельно и выбери «Скачать» или «Сохранить изображение».</p>
 </section>
 <section class="card">
-<h2>Что понимает поле инструкции</h2>
-<p class="small">Напиши «сделай ярче», «увеличь контраст», «насыщенные цвета», «чёрно-белое фото» или «сепия». Редактор применит соответствующий фильтр. Произвольные изменения сцены, удаление предметов и замену фона этот режим не выполняет.</p>
+<h2>Как писать инструкцию</h2>
+<p class="small">Опиши желаемый результат конкретно: что изменить и что обязательно оставить неизменным. Например: «Замени только фон на белый, сам товар не меняй: сохрани форму, цвет, надписи и пропорции». Генеративная модель может ошибаться в деталях; перед использованием результата проверь его.</p>
 </section>
 </main>
 <script>
@@ -74,7 +74,7 @@
     original.src=URL.createObjectURL(file);original.classList.remove('hidden');
     document.getElementById('fileInfo').textContent=file.name+' · '+(file.size/1024/1024).toFixed(2)+' МБ';
     setStatus('Фото выбрано. Напиши, что нужно изменить.');
-    document.getElementById('fileInfo').textContent=file.name+' · '+(file.size/1024/1024).toFixed(2)+' МБ · исходное разрешение сохранено'
+    document.getElementById('fileInfo').textContent=file.name+' · '+(file.size/1024/1024).toFixed(2)+' МБ · для бесплатной очереди фото уменьшается до 512 px'
   });
   editBtn.addEventListener('click',async()=>{
     if(busy)return;
@@ -83,15 +83,15 @@
     if(!prompt){setStatus('Напиши, что нужно изменить на фото.','error');promptEl.focus();return}
     busy=true;editBtn.disabled=true;editBtn.textContent='⏳ Обрабатываем…';resultCard.classList.add('hidden');
     try{
-      setStatus('Обрабатываем фото прямо на телефоне…');
+      setStatus('Подключаем бесплатный ИИ и отправляем фото в очередь обработки…');
       resultUrl=await localEnhance(sourceFile,prompt);
       resultPreview.src=resultUrl;resultCard.classList.remove('hidden');
-      resultInfo.textContent='Готово. Локальная обработка: фото не отправлялось в интернет.';
+      resultInfo.textContent='Готово. Изображение обработано генеративной моделью AI Horde. Проверь, что важные детали исходника сохранены.';
       setStatus('Фото обработано.','ok');resultCard.scrollIntoView({behavior:'smooth',block:'start'});
     }catch(err){
       const msg=err&&err.message?err.message:String(err);
       if(/Failed to fetch|NetworkError|Load failed/i.test(msg)){
-        setStatus('Браузер не смог обратиться к OpenAI API. Возможно, запрос заблокирован CORS в браузере. Для безопасной и стабильной работы нужен серверный посредник; не публикуй API-ключ в коде GitHub Pages.','error');
+        setStatus('Не удалось связаться с AI Horde. Возможно, сервис временно недоступен или Telegram/WebView блокирует соединение. Попробуй позже.','error');
       }else{
         setStatus('Не удалось отредактировать фото: '+msg,'error');
       }
@@ -113,8 +113,8 @@
     // Ограничиваем размер, чтобы анонимный запрос не требовал дорогой обработки.
     const maxSide=512, scale=Math.min(1,maxSide/Math.max(image.naturalWidth,image.naturalHeight));
     const canvas=document.createElement('canvas');
-    canvas.width=Math.max(64,Math.round(image.naturalWidth*scale));
-    canvas.height=Math.max(64,Math.round(image.naturalHeight*scale));
+    canvas.width=Math.max(64,Math.min(512,Math.round(image.naturalWidth*scale/64)*64));
+    canvas.height=Math.max(64,Math.min(512,Math.round(image.naturalHeight*scale/64)*64));
     const ctx=canvas.getContext('2d');
     ctx.drawImage(image,0,0,canvas.width,canvas.height);
     const payload=canvas.toDataURL('image/webp',0.88);
@@ -126,7 +126,7 @@
       body:JSON.stringify({
         prompt:positive,
         params:{
-          sampler_name:'k_euler',cfg_scale:7,denoising_strength:0.48,
+          sampler_name:'k_euler',cfg_scale:7,denoising_strength:0.48,negative_prompt:negative,
           height:canvas.height,width:canvas.width,steps:20,n:1,
           post_processing:[],karras:true,
           return_control_map:false
