@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#101827">
 <title>Фото ИИ — редактор изображений</title>
+<meta name="app-build" content="2026-10-21-fix-click-debug">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 :root{color-scheme:dark;--bg:#101827;--panel:#1b2940;--line:#30415c;--muted:#afbed3;--accent:#65e6ad;--text:#f4f7fb}
@@ -12,7 +13,7 @@
 </style>
 </head>
 <body>
-<header><h1>📷 Фото ИИ</h1><p>Редактирование по текстовой инструкции прямо в Telegram</p></header>
+<header><h1>📷 Фото ИИ</h1><p>Редактирование по текстовой инструкции прямо в Telegram · сборка 21.10.2026</p></header>
 <main>
 <section class="card">
 <h2>1. Исходная фотография</h2>
@@ -92,7 +93,9 @@
     document.getElementById('fileInfo').textContent=file.name+' · '+(file.size/1024/1024).toFixed(2)+' МБ · для бесплатной очереди фото уменьшается до 512 px'
   });
   editBtn.addEventListener('click',async()=>{
-    if(busy)return;
+    try{
+    if(busy){setStatus('Обработка уже выполняется. Подожди завершения.');return}
+    setStatus('Запуск обработки…');
     if(!sourceFile){setStatus('Сначала выбери фотографию.','error');return}
     const prompt=promptEl.value.trim();
     if(!prompt){setStatus('Напиши, что нужно изменить на фото.','error');promptEl.focus();return}
@@ -120,6 +123,10 @@
         setStatus('Не удалось отредактировать фото: '+msg,'error');
       }
     }finally{busy=false;editBtn.disabled=false;editBtn.textContent='✨ Обработать фото'}
+    }catch(unexpectedError){
+      setStatus('Ошибка приложения: '+(unexpectedError&&unexpectedError.message?unexpectedError.message:String(unexpectedError)),'error');
+      busy=false;editBtn.disabled=false;editBtn.textContent='✨ Обработать фото';
+    }
   });
   async function localEnhance(file,prompt){
     // AI Horde: бесплатная img2img-обработка без личного API-ключа.
