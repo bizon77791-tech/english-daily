@@ -248,93 +248,62 @@ function stopAudio(){
 function playPronunciation(text,statusId="audioStatus"){
  const status=document.getElementById(statusId);
  if(!status)return;
-
  stopAudio();
  const myRun=audioRun;
- status.textContent="Запускаю озвучивание…";
+ status.textContent="Запускаю звук…";
 
- // Сначала запускаем встроенную озвучку сразу по нажатию пользователя:
- // в Telegram WebView это повышает шанс, что воспроизведение не будет заблокировано.
- let speechStarted=false;
- let speechFailed=false;
- try{
-  if("speechSynthesis" in window&&typeof SpeechSynthesisUtterance!=="undefined"){
-   const speech=new SpeechSynthesisUtterance(text);
-   speech.lang="en-US";
-   speech.rate=0.88;
-   speech.onstart=()=>{
-    if(myRun!==audioRun)return;
-    speechStarted=true;
-    status.textContent="🔊 Произношение воспроизводится…";
-   };
-   speech.onend=()=>{
-    if(myRun===audioRun)status.textContent="✅ Озвучивание завершено.";
-   };
-   speech.onerror=()=>{
-    if(myRun!==audioRun)return;
-    speechFailed=true;
-    status.textContent="Встроенная озвучка недоступна. Пробую аудиофайл…";
-    tryRemotePronunciation(text,status,myRun);
-   };
-   window.speechSynthesis.speak(speech);
-   // Некоторые WebView не сообщают об ошибке, но и не начинают говорить.
-   setTimeout(()=>{
-    if(myRun===audioRun&&!speechStarted&&!speechFailed){
-     try{window.speechSynthesis.cancel();}catch(e){}
-     status.textContent="Пробую загрузить аудиофайл…";
-     tryRemotePronunciation(text,status,myRun);
-    }
-   },2200);
-   return;
+ // Важно: audio.play() вызывается сразу в обработчике нажатия,
+ // до любых ожиданий/сетевых запросов. Это помогает WebView Telegram.
+ const primary="https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=en-US&q="+encodeURIComponent(text);
+ tryAudio(primary,status,4500,myRun).then(async ok=>{
+  if(ok||myRun!==audioRun)return;
+  status.textContent="Пробую другой источник звука…";
+  const sources=[
+   "https://translate.google.co.uk/translate_tts?ie=UTF-8&client=tw-ob&tl=en&q=",
+   "https://translate.google.de/translate_tts?ie=UTF-8&client=tw-ob&tl=en&q="
+  ];
+  for(const source of sources){
+   if(myRun!==audioRun)return;
+   if(await tryAudio(source+encodeURIComponent(text),status,3500,myRun))return;
   }
- }catch(e){}
-
- tryRemotePronunciation(text,status,myRun);
-}
-
-async function tryRemotePronunciation(text,status,myRun){
- if(myRun!==audioRun)return;
- const sources=[
-  "https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=en-US&q=",
-  "https://translate.google.co.uk/translate_tts?ie=UTF-8&client=tw-ob&tl=en&q=",
-  "https://translate.google.de/translate_tts?ie=UTF-8&client=tw-ob&tl=en&q="
- ];
-
- for(const source of sources){
   if(myRun!==audioRun)return;
-  if(await tryAudio(source+encodeURIComponent(text),status,3500,myRun))return;
- }
-
- if(myRun!==audioRun)return;
- status.textContent="Ищу произношение в словаре…";
- try{
-  const controller=new AbortController();
-  const timeout=setTimeout(()=>controller.abort(),3500);
-  let response;
+  status.textContent="Ищу произношение в словаре…";
   try{
-   response=await fetch(
-    "https://api.dictionaryapi.dev/api/v2/entries/en/"+encodeURIComponent(text),
-    {signal:controller.signal,cache:"no-store"}
-   );
-  }finally{
-   clearTimeout(timeout);
-  }
-  if(response.ok){
-   const entries=await response.json();
-   for(const entry of entries){
-    for(const phonetic of entry.phonetics||[]){
-     if(!phonetic.audio)continue;
-     let url=phonetic.audio;
-     if(url.startsWith("//"))url="https:"+url;
-     if(myRun!==audioRun)return;
-     if(await tryAudio(url,status,4000,myRun))return;
+   const controller=new AbortController();
+   const timeout=setTimeout(()=>controller.abort(),3500);
+   let response;
+   try{
+    response=await fetch("https://api.dictionaryapi.dev/api/v2/entries/en/"+encodeURIComponent(text),{signal:controller.signal,cache:"no-store"});
+   }finally{clearTimeout(timeout);}
+   if(response.ok){
+    const entries=await response.json();
+    for(const entry of entries){
+     for(const phonetic of entry.phonetics||[]){
+      if(!phonetic.audio)continue;
+      let url=phonetic.audio;
+      if(url.startsWith("//"))url="https:"+url;
+      if(myRun!==audioRun)return;
+      if(await tryAudio(url,status,4000,myRun))return;
+     }
     }
    }
-  }
- }catch(e){}
- if(myRun===audioRun){
-  status.textContent="Звук не удалось запустить в Telegram. Открой приложение в Chrome и проверь громкость мультимедиа.";
- }
+  }catch(e){}
+  if(myRun!==audioRun)return;
+  // Последний резерв — встроенная озвучка Android/браузера.
+  try{
+   if("speechSynthesis" in window&&typeof SpeechSynthesisUtterance!=="undefined"){
+    const speech=new SpeechSynthesisUtterance(text);
+    speech.lang="en-US";
+    speech.rate=0.88;
+    speech.onstart=()=>{if(myRun===audioRun)status.textContent="🔊 Произношение воспроизводится…";};
+    speech.onend=()=>{if(myRun===audioRun)status.textContent="✅ Озвучивание завершено.";};
+    speech.onerror=()=>{if(myRun===audioRun)status.textContent="Звук недоступен. Проверь в Android настройку «Преобразование текста в речь» и выбери «Сервисы речи Google».";};
+    window.speechSynthesis.speak(speech);
+    return;
+   }
+  }catch(e){}
+  if(myRun===audioRun)status.textContent="Не удалось запустить звук. Проверь громкость мультимедиа и попробуй открыть приложение в Chrome.";
+ });
 }
 
 function tryAudio(url,status,timeoutMs=4000,myRun=audioRun){
