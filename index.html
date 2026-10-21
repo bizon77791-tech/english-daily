@@ -57,8 +57,17 @@
   const statusEl=document.getElementById('status'), resultCard=document.getElementById('resultCard');
   const resultPreview=document.getElementById('resultPreview'), resultInfo=document.getElementById('resultInfo');
   let sourceFile=null, resultUrl=null, busy=false;
-  document.querySelectorAll('[data-prompt]').forEach(b=>b.addEventListener('click',()=>{promptEl.value=b.dataset.prompt;promptEl.focus()}));
-  function setStatus(text,kind){statusEl.textContent=text;statusEl.className='status'+(kind?' '+kind)}
+  document.querySelectorAll('[data-prompt]').forEach(function(button) {
+    button.addEventListener('click', function() {
+      promptEl.value = button.dataset.prompt;
+      promptEl.focus();
+    });
+  });
+  function setStatus(message, kind) {
+    statusEl.textContent = message;
+    statusEl.className = 'status';
+    if (kind) statusEl.className += ' ' + kind;
+  }
   async function showResultImage(src){
     if(!src||typeof src!=='string')throw new Error('Пустая ссылка на изображение.');
     const loadSource=(source)=>new Promise((resolve,reject)=>{
