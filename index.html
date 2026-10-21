@@ -32,7 +32,7 @@
 </div>
 <textarea id="promptInput" class="field prompt" placeholder="Например: замени фон на белый, сделай свет ярче, сохрани форму и цвет товара..." maxlength="1200"></textarea>
 <div class="notice">Бесплатный режим использует изображение до 512 px и одну генерацию. Параметры качества и размера задаёт доступная модель в очереди.</div>
-<button id="editBtn" class="btn primary" type="button">✨ Обработать фото</button>
+<button id="editBtn" class="btn primary" type="button" onclick="var st=document.getElementById('status');if(st){st.textContent='Нажатие зарегистрировано. Проверяю запуск…';st.className='status';}">✨ Обработать фото</button>
 <div id="status" class="status" role="status" aria-live="polite"></div>
 </section>
 <section id="resultCard" class="card hidden">
