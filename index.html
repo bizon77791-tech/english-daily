@@ -250,58 +250,86 @@ function playPronunciation(text,statusId="audioStatus"){
  if(!status)return;
  stopAudio();
  const myRun=audioRun;
- status.textContent="Запускаю звук…";
+ status.textContent="Запускаю системное произношение…";
 
- // Call play() synchronously on the tap, before any network wait.
- const primary="https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=en-US&q="+encodeURIComponent(text);
- tryAudio(primary,status,4500,myRun).then(async ok=>{
-  if(ok||myRun!==audioRun)return;
-  status.textContent="Пробую другой источник звука…";
-  const sources=[
-   "https://translate.google.co.uk/translate_tts?ie=UTF-8&client=tw-ob&tl=en&q=",
-   "https://translate.google.de/translate_tts?ie=UTF-8&client=tw-ob&tl=en&q="
-  ];
-  for(const source of sources){
-   if(myRun!==audioRun)return;
-   if(await tryAudio(source+encodeURIComponent(text),status,3500,myRun))return;
-  }
-  if(myRun!==audioRun)return;
-  status.textContent="Ищу произношение в словаре…";
+ // Android WebView has no Telegram-specific audio API. Start Android/browser TTS
+ // directly inside the tap handler so it retains the user's interaction.
+ let fallbackStarted=false;
+ let finished=false;
+ let fallbackTimer=null;
+
+ function startFallback(reason){
+  if(fallbackStarted||myRun!==audioRun)return;
+  fallbackStarted=true;
+  if(fallbackTimer)clearTimeout(fallbackTimer);
+  try{if("speechSynthesis" in window)window.speechSynthesis.cancel();}catch(e){}
+  status.textContent=reason||"Системная озвучка недоступна. Пробую аудиофайл…";
+  playRemotePronunciation(text,status,myRun);
+ }
+
+ if("speechSynthesis" in window&&typeof SpeechSynthesisUtterance!=="undefined"){
   try{
-   const controller=new AbortController();
-   const timeout=setTimeout(()=>controller.abort(),3500);
-   let response;
-   try{
-    response=await fetch("https://api.dictionaryapi.dev/api/v2/entries/en/"+encodeURIComponent(text),{signal:controller.signal,cache:"no-store"});
-   }finally{clearTimeout(timeout);}
-   if(response.ok){
-    const entries=await response.json();
-    for(const entry of entries){
-     for(const phonetic of entry.phonetics||[]){
-      if(!phonetic.audio)continue;
-      let url=phonetic.audio;
-      if(url.startsWith("//"))url="https:"+url;
-      if(myRun!==audioRun)return;
-      if(await tryAudio(url,status,4000,myRun))return;
-     }
+   const speech=new SpeechSynthesisUtterance(text);
+   speech.lang="en-US";
+   speech.rate=0.88;
+   speech.onstart=()=>{
+    if(myRun!==audioRun||fallbackStarted)return;
+    finished=true;
+    if(fallbackTimer)clearTimeout(fallbackTimer);
+    status.textContent="🔊 Системное произношение воспроизводится…";
+   };
+   speech.onend=()=>{
+    if(myRun===audioRun&&!fallbackStarted){
+     finished=true;
+     if(fallbackTimer)clearTimeout(fallbackTimer);
+     status.textContent="✅ Озвучивание завершено.";
+    }
+   };
+   speech.onerror=()=>startFallback("Системная озвучка не запустилась. Пробую аудиофайл…");
+   // The speak() call itself is made synchronously during the button tap.
+   window.speechSynthesis.speak(speech);
+   fallbackTimer=setTimeout(()=>{
+    if(!finished)startFallback("Android TTS не начал воспроизведение. Пробую аудиофайл…");
+   },1800);
+   return;
+  }catch(e){}
+ }
+ startFallback("Системная озвучка недоступна. Пробую аудиофайл…");
+}
+
+async function playRemotePronunciation(text,status,myRun){
+ const sources=[
+  "https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=en-US&q=",
+  "https://translate.google.co.uk/translate_tts?ie=UTF-8&client=tw-ob&tl=en&q=",
+  "https://translate.google.de/translate_tts?ie=UTF-8&client=tw-ob&tl=en&q="
+ ];
+ for(const source of sources){
+  if(myRun!==audioRun)return;
+  if(await tryAudio(source+encodeURIComponent(text),status,3500,myRun))return;
+ }
+ if(myRun!==audioRun)return;
+ status.textContent="Ищу произношение в словаре…";
+ try{
+  const controller=new AbortController();
+  const timeout=setTimeout(()=>controller.abort(),3500);
+  let response;
+  try{
+   response=await fetch("https://api.dictionaryapi.dev/api/v2/entries/en/"+encodeURIComponent(text),{signal:controller.signal,cache:"no-store"});
+  }finally{clearTimeout(timeout);}
+  if(response.ok){
+   const entries=await response.json();
+   for(const entry of entries){
+    for(const phonetic of entry.phonetics||[]){
+     if(!phonetic.audio)continue;
+     let url=phonetic.audio;
+     if(url.startsWith("//"))url="https:"+url;
+     if(myRun!==audioRun)return;
+     if(await tryAudio(url,status,4000,myRun))return;
     }
    }
-  }catch(e){}
-  if(myRun!==audioRun)return;
-  try{
-   if("speechSynthesis" in window&&typeof SpeechSynthesisUtterance!=="undefined"){
-    const speech=new SpeechSynthesisUtterance(text);
-    speech.lang="en-US";
-    speech.rate=0.88;
-    speech.onstart=()=>{if(myRun===audioRun)status.textContent="🔊 Произношение воспроизводится…";};
-    speech.onend=()=>{if(myRun===audioRun)status.textContent="✅ Озвучивание завершено.";};
-    speech.onerror=()=>{if(myRun===audioRun)status.textContent="Звук недоступен. Проверь в Android настройку «Преобразование текста в речь» и выбери «Сервисы речи Google».";};
-    window.speechSynthesis.speak(speech);
-    return;
-   }
-  }catch(e){}
-  if(myRun===audioRun)status.textContent="Не удалось запустить звук. Проверь громкость мультимедиа и попробуй открыть приложение в Chrome.";
- });
+  }
+ }catch(e){}
+ if(myRun===audioRun)status.textContent="Звук не запустился ни через Android TTS, ни через аудиосервисы. Это указывает на ограничение WebView/системного звука или сетевой доступ; повторные смены URL не помогут. Нужна диагностика WebView на Android.";
 }
 
 function tryAudio(url,status,timeoutMs=4000,myRun=audioRun){
