@@ -117,7 +117,7 @@
     canvas.height=Math.max(64,Math.round(image.naturalHeight*scale));
     const ctx=canvas.getContext('2d');
     ctx.drawImage(image,0,0,canvas.width,canvas.height);
-    const payload=canvas.toDataURL('image/jpeg',0.88).split(',')[1];
+    const payload=canvas.toDataURL('image/webp',0.88);
     const positive = prompt.trim() + ', preserve the original subject, identity, pose, composition and important details; realistic photo edit, high quality';
     const negative = 'different person, changed identity, extra limbs, distorted face, deformed object, duplicate objects, text, watermark, blurry, low quality';
     const response=await fetch('https://aihorde.net/api/v2/generate/async',{
@@ -129,9 +129,9 @@
           sampler_name:'k_euler',cfg_scale:7,denoising_strength:0.48,
           height:canvas.height,width:canvas.width,steps:20,n:1,
           post_processing:[],karras:true,
-          source_image:payload,source_processing:['img2img'],
           return_control_map:false
         },
+        source_image:payload,source_processing:'img2img',
         nsfw:false,censor_nsfw:true,models:[],r2:false
       })
     });
