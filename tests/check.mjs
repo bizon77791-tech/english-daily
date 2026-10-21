@@ -31,6 +31,9 @@ assert.match(html, /apiKey/, "user must be able to enter an API key without embe
 assert.doesNotMatch(html, /aihorde\.net|0000000000|source_processing:\s*'img2img'/,
   "the low-fidelity anonymous AI Horde integration should be removed");
 assert.match(html, /downloadResult/, "saving the resulting image should be implemented");
+assert.match(html, /gen\.pollinations\.ai\/v1\/images\/edits/, "Pollinations image editing fallback should be available");
+assert.match(html, /value="local"/, "offline local enhancement mode should be available without an API key");
+assert.match(html, /localEnhance/, "local enhancement should work without sending the image to a provider");
 assert.match(html, /data-prompt=/, "quick edit prompts should be available");
 assert.doesNotMatch(html, /English Daily|englishDailyProgressV2|playPronunciation|speechSynthesis/i,
   "legacy English-learning app code should be removed");
