@@ -19,7 +19,7 @@
 <label class="upload" for="photoInput"><span>📷 Выбрать фото на устройстве</span><input id="photoInput" type="file" accept="image/jpeg,image/png,image/webp" aria-label="Выбрать фотографию"></label>
 <img id="originalPreview" class="preview hidden" alt="Исходное фото">
 <div id="fileInfo" class="small"></div>
-<div class="notice">Редактирование выполняется официальной моделью GPT Image через OpenAI API. Для работы нужен отдельный API-ключ и оплачиваемый API-баланс: подписка ChatGPT не включает API-запросы. Ключ используется только в текущей открытой странице и не сохраняется приложением. Не используй это приложение на чужом устройстве и не публикуй свой ключ. Фотография отправляется в OpenAI для обработки.</div>
+<div class="notice">Редактирование выполняется официальной моделью GPT Image 2.5 через OpenAI API. Для работы нужен отдельный API-ключ и оплачиваемый API-баланс: подписка ChatGPT не включает API-запросы. Ключ используется только в текущей открытой странице и не сохраняется приложением. Не используй это приложение на чужом устройстве и не публикуй свой ключ. Фотография отправляется в OpenAI для обработки.</div>
 <label class="small" for="apiKey">OpenAI API-ключ</label><input id="apiKey" class="field" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="sk-…">
 <p class="small">Создать ключ можно в <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">OpenAI API keys</a>. Нужен активный API-доступ и баланс. Не вставляй сюда пароль от ChatGPT.</p>
 </section>
@@ -90,12 +90,11 @@
     busy=true;editBtn.disabled=true;editBtn.textContent='⏳ Редактируем…';resultCard.classList.add('hidden');setStatus('Отправляем исходное фото в GPT Image. Это может занять несколько минут…');
     try{
       const form=new FormData();
-      form.append('model','gpt-image-1.5');
+      form.append('model','gpt-image-2.5-sunburst');
       form.append('image[]',sourceFile,sourceFile.name);
       form.append('prompt',prompt+' Preserve all parts of the original image that are not explicitly requested to change. Do not add unrequested objects, text, logos, or watermarks. Follow the edit instructions literally.');
       form.append('quality',document.getElementById('quality').value);
       form.append('size',document.getElementById('size').value);
-      form.append('input_fidelity','high');
       form.append('output_format','png');
       setStatus('GPT Image редактирует изображение… Не закрывай приложение.');
       const response=await fetch('https://api.openai.com/v1/images/edits',{
