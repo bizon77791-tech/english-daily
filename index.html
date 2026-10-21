@@ -57,7 +57,29 @@
   const resultPreview=document.getElementById('resultPreview'), resultInfo=document.getElementById('resultInfo');
   let sourceFile=null, resultUrl=null, busy=false;
   document.querySelectorAll('[data-prompt]').forEach(b=>b.addEventListener('click',()=>{promptEl.value=b.dataset.prompt;promptEl.focus()}));
-  function setStatus(text,kind){statusEl.textContent=text;statusEl.className='status'+(kind?' '+kind:'')}
+  function setStatus(text,kind){statusEl.textContent=text;statusEl.className='status'+(kind?' '+kind)}
+  async function showResultImage(src){
+    if(!src||typeof src!=='string')throw new Error('Пустая ссылка на изображение.');
+    const loadDirect=()=>new Promise((resolve,reject)=>{
+      const timer=setTimeout(()=>{cleanup();reject(new Error('Истекло время загрузки изображения.'))},20000);
+      const cleanup=()=>{clearTimeout(timer);resultPreview.onload=null;resultPreview.onerror=null};
+      resultPreview.onload=()=>{cleanup();if(resultPreview.naturalWidth>0)resolve(src);else reject(new Error('Изображение имеет нулевой размер.'))};
+      resultPreview.onerror=()=>{cleanup();reject(new Error('Браузер не смог открыть ссылку результата.'))};
+      resultPreview.src=src;
+    });
+    try{await loadDirect();return}catch(directError){
+      try{
+        const response=await fetch(src,{cache:'no-store'});
+        if(!response.ok)throw new Error('HTTP '+response.status);
+        const blob=await response.blob();
+        if(!blob.type.startsWith('image/'))throw new Error('Сервис вернул файл не в формате изображения ('+(blob.type||'тип не определён')+').');
+        const objectUrl=URL.createObjectURL(blob);
+        try{await loadDirect.call(null,objectUrl);return}catch(e){URL.revokeObjectURL(objectUrl);throw e}
+      }catch(fetchError){
+        throw new Error(fetchError&&fetchError.message?fetchError.message:(directError&&directError.message?directError.message:'ошибка загрузки файла'));
+      }
+    }
+  }
   
   input.addEventListener('change',async()=>{
     const file=input.files&&input.files[0]; if(!file)return;
@@ -78,9 +100,18 @@
     try{
       setStatus('Подключаем бесплатный ИИ и отправляем фото в очередь обработки…');
       resultUrl=await localEnhance(sourceFile,prompt);
-      resultPreview.src=resultUrl;resultCard.classList.remove('hidden');
-      resultInfo.textContent='Готово. Изображение обработано генеративной моделью AI Horde. Проверь, что важные детали исходника сохранены.';
-      setStatus('Фото обработано.','ok');resultCard.scrollIntoView({behavior:'smooth',block:'start'});
+      resultCard.classList.remove('hidden');
+      resultInfo.textContent='Получаем изображение…';
+      try{
+        await showResultImage(resultUrl);
+      }catch(imageErr){
+        resultUrl=null;
+        resultPreview.removeAttribute('src');
+        resultInfo.textContent='Сервис сообщил о завершении, но изображение не удалось загрузить.';
+        throw new Error('Генерация завершилась, но файл изображения не загрузился. '+(imageErr&&imageErr.message?imageErr.message:'Проверь соединение и повтори попытку.'));
+      }
+      resultInfo.textContent='Фото загружено. Проверь, что важные детали исходника сохранены.';
+      setStatus('Фото обработано и загружено.','ok');resultCard.scrollIntoView({behavior:'smooth',block:'start'});
     }catch(err){
       const msg=err&&err.message?err.message:String(err);
       if(/Failed to fetch|NetworkError|Load failed/i.test(msg)){
