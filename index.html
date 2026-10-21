@@ -19,7 +19,7 @@
 <label class="upload" for="photoInput"><span>📷 Выбрать фото на устройстве</span><input id="photoInput" type="file" accept="image/jpeg,image/png,image/webp" aria-label="Выбрать фотографию"></label>
 <img id="originalPreview" class="preview hidden" alt="Исходное фото">
 <div id="fileInfo" class="small"></div>
-<div class="notice">Для ИИ-редактирования фото отправляется в сторонний сервис AI Horde. Не загружай конфиденциальные изображения. Бесплатный анонимный доступ не требует регистрации, но очередь может быть долгой и сервис не гарантирует постоянную доступность.</div>
+<div class="notice">Для ИИ-редактирования фото отправляется в сторонний сервис AI Horde. Не загружай конфиденциальные изображения. Бесплатный анонимный доступ не требует регистрации. Чтобы снизить расход ресурсов, фото перед отправкой уменьшается до размера не более 512 px по длинной стороне; очередь всё равно может быть долгой.</div>
 </section>
 <section class="card">
 <h2>2. Что изменить на фото?</h2>
@@ -35,7 +35,7 @@
 <select id="strength" class="field"><option value="0.35">Слабо — сохранить больше деталей</option><option value="0.55" selected>Средне — баланс изменений</option><option value="0.75">Сильно — больше изменений</option></select>
 </label>
 <label class="small">Размер результата
-<select id="size" class="field"><option value="512">512 × 512 — быстрее</option><option value="768" selected>768 × 768 — баланс</option><option value="1024">1024 × 1024 — дольше</option></select>
+<select id="size" class="field"><option value="512" selected>До 512 px — бесплатно и легче</option></select>
 </label>
 </div>
 <button id="editBtn" class="btn primary" type="button">✨ Обработать фото с ИИ</button>
@@ -51,7 +51,7 @@
 </section>
 <section class="card">
 <h2>Что доступно сейчас</h2>
-<p class="small">Подключён AI Horde — бесплатный общественный сервис, который допускает запросы без регистрации. Анонимные запросы имеют низший приоритет и могут долго ждать. Редактирование основано на image-to-image: модель перерисовывает изображение по описанию, поэтому мелкие детали исходника могут измениться.</p>
+<p class="small">Подключён AI Horde — бесплатный общественный сервис, который допускает запросы без регистрации. Анонимные запросы имеют низший приоритет и могут долго ждать. Приложение уменьшает фото до 512 px и использует 20 шагов, чтобы снизить требования к ресурсам. Редактирование основано на image-to-image: модель перерисовывает изображение по описанию, поэтому мелкие детали исходника могут измениться.</p>
 <p class="small">Другие API-провайдеры, требующие аккаунт, секретный ключ или платёжный метод, намеренно не включены: ключ нельзя безопасно хранить в публичном GitHub Pages приложении. Позже можно добавить серверный шлюз и дополнительные провайдеры, если появится доступ к их ключам.</p>
 </section>
 </main>
@@ -68,6 +68,7 @@
   function setStatus(text,kind){statusEl.textContent=text;statusEl.className='status'+(kind?' '+kind:'')}
   function base64FromDataUrl(data){return data.split(',')[1]||''}
   function fileToDataUrl(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result));reader.onerror=()=>reject(new Error('Не удалось прочитать файл.'));reader.readAsDataURL(file)})}
+  async function prepareImage(file,maxSide){const data=await fileToDataUrl(file);const img=new Image();img.src=data;await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=()=>reject(new Error('Не удалось открыть изображение.'))});const scale=Math.min(1,maxSide/Math.max(img.naturalWidth,img.naturalHeight));const w=Math.max(256,Math.floor(img.naturalWidth*scale/64)*64);const h=Math.max(256,Math.floor(img.naturalHeight*scale/64)*64);const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,w,h);return {data:canvas.toDataURL('image/jpeg',0.86),width:w,height:h}}
   input.addEventListener('change',async()=>{
     const file=input.files&&input.files[0]; if(!file)return;
     if(!/^image\/(jpeg|png|webp)$/.test(file.type)){setStatus('Выбери изображение JPG, PNG или WEBP.','error');return}
@@ -76,7 +77,7 @@
     original.src=URL.createObjectURL(file);original.classList.remove('hidden');
     document.getElementById('fileInfo').textContent=file.name+' · '+(file.size/1024/1024).toFixed(2)+' МБ';
     setStatus('Фото выбрано. Напиши, что нужно изменить.');
-    try{sourceData=await fileToDataUrl(file)}catch(e){setStatus(e.message,'error')}
+    try{const prepared=await prepareImage(file,512);sourceData=prepared.data;document.getElementById('fileInfo').textContent=file.name+' · исходник '+(file.size/1024/1024).toFixed(2)+' МБ · для ИИ '+prepared.width+'×'+prepared.height+' px'}catch(e){setStatus(e.message,'error')}
   });
   async function apiJson(url,options){
     const response=await fetch(url,options);let data;
@@ -107,13 +108,13 @@
     if(!sourceFile||!sourceData){setStatus('Сначала выбери фотографию.','error');return}
     const prompt=promptEl.value.trim();
     if(!prompt){setStatus('Напиши, что нужно изменить на фото.','error');promptEl.focus();return}
-    busy=true;editBtn.disabled=true;editBtn.textContent='⏳ Обрабатываем…';resultCard.classList.add('hidden');setStatus('Отправляем запрос в бесплатную очередь AI Horde…');
+    busy=true;editBtn.disabled=true;editBtn.textContent='⏳ Обрабатываем…';resultCard.classList.add('hidden');setStatus('Подготавливаем уменьшенную копию и отправляем запрос в AI Horde…');
     try{
-      const dim=Number(document.getElementById('size').value);
+      const preparedImg=new Image();preparedImg.src=sourceData;await new Promise((resolve,reject)=>{preparedImg.onload=resolve;preparedImg.onerror=()=>reject(new Error('Не удалось подготовить фото для ИИ.'))});
       const body={
         prompt:prompt+' . Preserve the main subject, avoid adding text or watermarks.',
         params:{
-          width:dim,height:dim,steps:25,cfg_scale:7,
+          width:preparedImg.naturalWidth,height:preparedImg.naturalHeight,steps:20,cfg_scale:6,
           denoising_strength:Number(document.getElementById('strength').value),
           sampler_name:'k_euler_a',karras:true,n:1
         },
