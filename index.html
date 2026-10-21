@@ -30,14 +30,7 @@
 <button class="chip" type="button" data-prompt="Redesign this room in a modern, warm, realistic style while keeping the room layout recognizable.">🏠 Обновить интерьер</button>
 </div>
 <textarea id="promptInput" class="field prompt" placeholder="Например: замени фон на белый, сделай свет ярче, сохрани форму и цвет товара..." maxlength="1200"></textarea>
-<div class="row">
-<label class="small">Качество обработки
-<select id="quality" class="field"><option value="low">Быстрее и дешевле</option><option value="medium" selected>Среднее — рекомендовано</option><option value="high">Максимальное — дороже и дольше</option></select>
-</label>
-<label class="small">Размер результата
-<select id="size" class="field"><option value="auto" selected>Автоматически по фото</option><option value="1024x1024">1024 × 1024</option></select>
-</label>
-</div>
+<div class="notice">Бесплатный режим использует изображение до 512 px и одну генерацию. Параметры качества и размера задаёт доступная модель в очереди.</div>
 <button id="editBtn" class="btn primary" type="button">✨ Обработать фото</button>
 <div id="status" class="status" role="status" aria-live="polite"></div>
 </section>
